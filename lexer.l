@@ -79,5 +79,14 @@
 // String constants
 \"([^\\\"]|\\.)*\"{std::cout << "String constant found" << std::endl;}
 
+// COMMENTS
+$.*{std::cout << "Comment found" << std::endl;}
 
+// WHITESPACE
+\t|" "|\n{std::cout << "Whitespace found" << std::endl;}
 %%
+
+
+int main(){
+  yylex();
+}
