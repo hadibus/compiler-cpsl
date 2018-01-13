@@ -100,7 +100,15 @@
 
 
 
-\"([^\\\"]|\\.)+\" {std::cout << "String constant found" << std::endl;}
+\"([^\\\"]|\\[^n])+\" {
+/* This matches a string constant 
+ * \" opening quote
+ * [^\\\"] not a \" 
+ * \\[^n] any excaped character except for newline 
+ * ( ... )+ one or more
+ * \" closing quote */
+std::cout << "String constant found" << std::endl;
+}
 
 
 
@@ -116,7 +124,7 @@ $.* {std::cout << "Comment found" << std::endl;}
 
 
 
-\t|" " {std::cout << "Whitespace found" << std::endl;}
+\t|" "+ {std::cout << "Whitespace found" << std::endl;}
 \n {std::cout << "Newline found" << std::endl;}
 
 
@@ -132,7 +140,12 @@ throw std::runtime_error("Unidentified expression");
 
 
 \"([^\\\"]|\\.|\n)+\" {
-/* This throws error on a string containing a newline character */
+/* This throws error on a string containing a newline character 
+ * \" opening quote
+ * [^\\\"] not a \" 
+ * \x where x is any character
+ * ( ... )+ one or more
+ * \" closing quote */
 throw std::runtime_error("String constant contains newline char");
 }
 
@@ -143,13 +156,14 @@ throw std::runtime_error("Char constant contains newline char");
 
 \"\" {
 /* This throws error on empty string */
-throw std::runtime error("Empty string constant");
+throw std::runtime_error("Empty string constant");
 }
 
 '' {
 /* This throws error on empy char */
-throw std::runtime error("Emply char constant");
+throw std::runtime_error("Emply char constant");
 }
+
 %%
 
 
