@@ -1,42 +1,43 @@
 %option noyywrap
 %{
 #include<iostream>
+#include<cstdlib>
 %}
 
 
 
 %%
-"array"|"ARRAY" {std::cout << "Keyword \"array\" found" << std::endl;}
-"begin"|"BEGIN" {std::cout << "Keyword \"begin\" found" << std::endl;}
-"chr"|"CHR" {std::cout << "Keyword \"chr\" found" << std::endl;}
-"const"|"CONST" {std::cout << "Keyword \"const\" found" << std::endl;}
-"do"|"DO" {std::cout << "Keyword \"do\" found" << std::endl;}
-"downto"|"DOWNTO" {std::cout << "Keyword \"downto\" found" << std::endl;}
-"else"|"ELSE" {std::cout << "Keyword \"else\" found" << std::endl;}
-"elseif"|"ELSEIF" {std::cout << "Keyword \"elseif\" found" << std::endl;}
-"end"|"END" {std::cout << "Keyword \"end\" found" << std::endl;}
-"for"|"FOR" {std::cout << "Keyword \"for\" found" << std::endl;}
-"forward"|"FORWARD" {std::cout << "Keyword \"forward\" found" << std::endl;}
-"function"|"FUNCTION" {std::cout << "Keyword \"function\" found" << std::endl;}
-"if"|"IF" {std::cout << "Keyword \"if\" found" << std::endl;}
-"of"|"OF" {std::cout << "Keyword \"of\" found" << std::endl;}
-"ord"|"ORD" {std::cout << "Keyword \"ord\" found" << std::endl;}
-"pred"|"PRED" {std::cout << "Keyword \"pred\" found" << std::endl;}
-"procedure"|"PROCEDURE" {std::cout << "Keyword \"procedure\" found" << std::endl;}
-"read"|"READ" {std::cout << "Keyword \"read\" found" << std::endl;}
-"record"|"RECORD" {std::cout << "Keyword \"record\" found" << std::endl;}
-"ref"|"REF" {std::cout << "Keyword \"ref\" found" << std::endl;}
-"repeat"|"REPEAT" {std::cout << "Keyword \"repeat\" found" << std::endl;}
-"return"|"RETURN" {std::cout << "Keyword \"return\" found" << std::endl;}
-"stop"|"STOP" {std::cout << "Keyword \"stop\" found" << std::endl;}
-"succ"|"SUCC" {std::cout << "Keyword \"succ\" found" << std::endl;}
-"then"|"THEN" {std::cout << "Keyword \"then\" found" << std::endl;}
-"to"|"TO" {std::cout << "Keyword \"to\" found" << std::endl;}
-"type"|"TYPE" {std::cout << "Keyword \"type\" found" << std::endl;}
-"until"|"UNTIL" {std::cout << "Keyword \"until\" found" << std::endl;}
-"var"|"VAR" {std::cout << "Keyword \"var\" found" << std::endl;}
-"while"|"WHILE" {std::cout << "Keyword \"while\" found" << std::endl;}
-"write"|"WRITE" {std::cout << "Keyword \"write\" found" << std::endl;}
+"array"|"ARRAY" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"begin"|"BEGIN" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"chr"|"CHR"  {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"const"|"CONST" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"do"|"DO" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"downto"|"DOWNTO" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"else"|"ELSE" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"elseif"|"ELSEIF" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"end"|"END" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"for"|"FOR" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"forward"|"FORWARD" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"function"|"FUNCTION" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"if"|"IF" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"of"|"OF" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"ord"|"ORD" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"pred"|"PRED" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"procedure"|"PROCEDURE" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"read"|"READ" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"record"|"RECORD" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"ref"|"REF" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"repeat"|"REPEAT" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"return"|"RETURN" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"stop"|"STOP" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"succ"|"SUCC" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"then"|"THEN" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"to"|"TO" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"type"|"TYPE" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"until"|"UNTIL" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"var"|"VAR" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"while"|"WHILE" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"write"|"WRITE" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
 
 
 
@@ -44,7 +45,12 @@
 
 
 
-[a-zA-Z][a-zA-Z0-9_]* {std::cout << "Identifier found" << std::endl;}
+[a-zA-Z][a-zA-Z0-9_]* {
+/* Matches identifiers
+ * First character is alph
+ * later optional chars are alphanumeric and _
+ */
+std::cout << "Identifier(" << yytext << ")" << std::endl;}
 
 
 
@@ -52,29 +58,9 @@
 
 
 
-"+" {std::cout << "Operator/delimeter found" << std::endl;}
-"-" {std::cout << "Operator/delimeter found" << std::endl;}
-"*" {std::cout << "Operator/delimeter found" << std::endl;}
-"/" {std::cout << "Operator/delimeter found" << std::endl;}
-"&" {std::cout << "Operator/delimeter found" << std::endl;}
-"|" {std::cout << "Operator/delimeter found" << std::endl;}
-"~" {std::cout << "Operator/delimeter found" << std::endl;}
-"=" {std::cout << "Operator/delimeter found" << std::endl;}
-"<>" {std::cout << "Operator/delimeter found" << std::endl;}
-"<" {std::cout << "Operator/delimeter found" << std::endl;}
-"<=" {std::cout << "Operator/delimeter found" << std::endl;}
-">" {std::cout << "Operator/delimeter found" << std::endl;}
-">=" {std::cout << "Operator/delimeter found" << std::endl;}
-"." {std::cout << "Operator/delimeter found" << std::endl;}
-"," {std::cout << "Operator/delimeter found" << std::endl;}
-":" {std::cout << "Operator/delimeter found" << std::endl;}
-";" {std::cout << "Operator/delimeter found" << std::endl;}
-"(" {std::cout << "Operator/delimeter found" << std::endl;}
-")" {std::cout << "Operator/delimeter found" << std::endl;}
-"[" {std::cout << "Operator/delimeter found" << std::endl;}
-"]" {std::cout << "Operator/delimeter found" << std::endl;}
-":=" {std::cout << "Operator/delimeter found" << std::endl;}
-"%" {std::cout << "Operator/delimeter found" << std::endl;}
+"+"|"-"|"*"|"/"|"&"|"|"|"~"|"="|"<>"|"<"|"<="|">"|">="|"."|","|":"|";"|"("|")"|"["|"]"|":="|"%" {
+std::cout << "Operator/delimeter(" << yytext << ")" << std::endl;
+}
 
 
 
@@ -82,16 +68,14 @@
 
 
 
-0x[a-fA-F0-9]+ {std::cout << "Hex constant found" << std::endl;}
-0[0-7]+ {std::cout << "Octal constant found" << std::endl;}
-0|[1-9][0-9]* {std::cout << "Decimal constant found" << std::endl;}
+(0x[0-9a-fA-F]+)|(0[0-7]+)|([0-9]+) {std::cout << "Integer(" << std::strtol(yytext, NULL, 0) << ")" << std::endl;}
 
 
 
 
 
 
-'.+' {std::cout << "Char constant found" << std::endl;}
+'.+' {std::cout << "Const-Char(" << yytext << ")" << std::endl;}
 
 
 
@@ -107,7 +91,7 @@
  * \\[^n] any excaped character except for newline 
  * ( ... )+ one or more
  * \" closing quote */
-std::cout << "String constant found" << std::endl;
+std::cout << "Const-Char(" << yytext << ")" << std::endl;
 }
 
 
@@ -116,7 +100,7 @@ std::cout << "String constant found" << std::endl;
 
 
 
-$.* {std::cout << "Comment found" << std::endl;}
+$.* {std::cout << "Comment(" << yytext << ")" << std::endl;}
 
 
 
@@ -124,7 +108,7 @@ $.* {std::cout << "Comment found" << std::endl;}
 
 
 
-\t|" "+ {std::cout << "Whitespace found" << std::endl;}
+\t|" "+ {std::cout << "Whitespace(" << yytext << ")" << std::endl;}
 \n {std::cout << "Newline found" << std::endl;}
 
 
@@ -135,9 +119,8 @@ $.* {std::cout << "Comment found" << std::endl;}
  * 08 (too large to be octal)
  * _
  */
-throw std::runtime_error("Unidentified expression");
+throw std::runtime_error("Unidentified expression(" + std::string(yytext) + ")");
 }
-
 
 \"([^\\\"]|\\.|\n)+\" {
 /* This throws error on a string containing a newline character 
@@ -146,12 +129,12 @@ throw std::runtime_error("Unidentified expression");
  * \x where x is any character
  * ( ... )+ one or more
  * \" closing quote */
-throw std::runtime_error("String constant contains newline char");
+throw std::runtime_error("Newline char in string(" + std::string(yytext) + ")");
 }
 
 '\n' {
 /* This throws when char constant contains newline character */
-throw std::runtime_error("Char constant contains newline char");
+throw std::runtime_error("Newline char in const char(" + std::string(yytext) + ")");
 }
 
 \"\" {
@@ -161,7 +144,7 @@ throw std::runtime_error("Empty string constant");
 
 '' {
 /* This throws error on empy char */
-throw std::runtime_error("Emply char constant");
+throw std::runtime_error("Empty char constant");
 }
 
 %%
