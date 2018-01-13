@@ -4,8 +4,9 @@
 #include<cstdlib>
 %}
 
+DELIM "+"|"-"|"*"|"/"|"&"|"|"|"~"|"="|"<>"|"<"|"<="|">"|">="|"."|","|":"|";"|"("|")"|"["|"]"|":="|"%" 
 
-
+DELIM2 \+\-\*\/\&\|\~\="<>"\<"<="\>">="\.\,\:\;"("")""[""]"":="\% 
 %%
 "array"|"ARRAY" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
 "begin"|"BEGIN" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
@@ -40,11 +41,6 @@
 "write"|"WRITE" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
 
 
-
-
-
-
-
 [a-zA-Z][a-zA-Z0-9_]* {
 /* Matches identifiers
  * First character is alph
@@ -52,36 +48,18 @@
  */
 std::cout << "Identifier(" << yytext << ")" << std::endl;}
 
-
-
-
-
-
-
-"+"|"-"|"*"|"/"|"&"|"|"|"~"|"="|"<>"|"<"|"<="|">"|">="|"."|","|":"|";"|"("|")"|"["|"]"|":="|"%" {
+{DELIM} {
 std::cout << "Operator/delimeter(" << yytext << ")" << std::endl;
 }
 
 
+(0x[0-9a-fA-F]+)|(0[0-7]+)|([1-9][0-9]*)|(0) {
+std::cout << "Integer(" << yytext << ")" << std::endl;
+std::cout << std::strtol(yytext, NULL, 0) << std::endl;
+}
 
 
-
-
-
-(0x[0-9a-fA-F]+)|(0[0-7]+)|([0-9]+) {std::cout << "Integer(" << std::strtol(yytext, NULL, 0) << ")" << std::endl;}
-
-
-
-
-
-
-'.+' {std::cout << "Const-Char(" << yytext << ")" << std::endl;}
-
-
-
-
-
-
+'.'|'\\[^n]' {std::cout << "Const-Char(" << yytext << ")" << std::endl;}
 
 
 \"([^\\\"]|\\[^n])+\" {
@@ -91,29 +69,23 @@ std::cout << "Operator/delimeter(" << yytext << ")" << std::endl;
  * \\[^n] any excaped character except for newline 
  * ( ... )+ one or more
  * \" closing quote */
-std::cout << "Const-Char(" << yytext << ")" << std::endl;
+std::cout << "Const-String(" << yytext << ")" << std::endl;
 }
 
 
-
-
-
-
-
 $.* {std::cout << "Comment(" << yytext << ")" << std::endl;}
-
-
-
-
-
 
 
 \t|" "+ {std::cout << "Whitespace(" << yytext << ")" << std::endl;}
 \n {std::cout << "Newline found" << std::endl;}
 
 
-
-[0-9_][^0-7][8-9a-zA-Z]* {
+(_.*)|([0-9][0-9]*([^0-9\t\n \:\;\]])) {
+/*
+ * first char is 0-9
+ * second optional char is anything 0-9
+ * third optional character is 8,9, or alpha
+ */
 /* This throws error on:
  * 0x (Incomplete hex, invalid identifier)
  * 08 (too large to be octal)
@@ -122,17 +94,23 @@ $.* {std::cout << "Comment(" << yytext << ")" << std::endl;}
 throw std::runtime_error("Unidentified expression(" + std::string(yytext) + ")");
 }
 
+(0x[0-9a-fA-F]*[^0-9a-fA-F\t\n ])|(0[0-7]*[8-9]) {
+/* Throws for a bad hex or octal integer. */
+throw std::runtime_error("Bad integer(" + std::string(yytext) + ")");
+}
+
 \"([^\\\"]|\\.|\n)+\" {
 /* This throws error on a string containing a newline character 
  * \" opening quote
  * [^\\\"] not a \" 
  * \x where x is any character
  * ( ... )+ one or more
- * \" closing quote */
+ * \" closing quote
+ */
 throw std::runtime_error("Newline char in string(" + std::string(yytext) + ")");
 }
 
-'\n' {
+'\\n' {
 /* This throws when char constant contains newline character */
 throw std::runtime_error("Newline char in const char(" + std::string(yytext) + ")");
 }
@@ -147,10 +125,15 @@ throw std::runtime_error("Empty string constant");
 throw std::runtime_error("Empty char constant");
 }
 
+'[^\\]. {
+/* This throws error on more than one char in char constant */
+throw std::runtime_error("Bad const char(" + std::string(yytext) + ")");
+}
 %%
 
 
-int main(){
+int main()
+{
   yylex();
 }
 
