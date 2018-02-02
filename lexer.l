@@ -40,38 +40,23 @@ DELIM2 \+\-\*\/\&\|\~\="<>"\<"<="\>">="\.\,\:\;\(\)\[\]":="\%
 "while"|"WHILE"           {return KW_WHILE;} 
 "write"|"WRITE"           {return KW_WRITE;}
 
-[a-zA-Z][a-zA-Z0-9_]* {
-std::cout << "Identifier(" << yytext << ")" << std::endl;
-}
+[a-zA-Z][a-zA-Z0-9_]*     {return ID;}
 
-{DELIM} {
-std::cout << "Operator/delimeter(" << yytext << ")" << std::endl;
-}
+{DELIM}                   {return DELIM;}
 
 (0x[0-9a-fA-F]+)|(0[0-7]+)|([1-9][0-9]*)|(0) {
-std::cout << "Integer(" << yytext << ")" << std::endl;
-std::cout << std::strtol(yytext, NULL, 0) << std::endl;
+ return NUMBER; 
 }
 
-'.'|'\\.' {
-std::cout << "Const-Char(" << yytext << ")" << std::endl;
-}
+'.'|'\\.'                 {return CONST_CHAR;}
 
-\"([^\\\"\n]|\\.)+\" {
-std::cout << "Const-String(" << yytext << ")" << std::endl;
-}
+\"([^\\\"\n]|\\.)+\"      {return CONST_STR;}
 
-$.* {
-std::cout << "Comment(" << yytext << ")" << std::endl;
-}
+$.*                       {return COMMENT;}
 
-\t|" "+ {
-std::cout << "Whitespace(" << yytext << ")" << std::endl;
-}
+\t|" "+                   {return WHITESPACE;}
 
-\n {
-std::cout << "Newline found" << std::endl;
-}
+\n                        {return NEWLINE;}
 
 
 (_.*)|([0-9][0-9]*([^0-9\t\n \:\;\]\)\]\+\*\,\/\-])) {
