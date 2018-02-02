@@ -8,37 +8,37 @@ DELIM "+"|"-"|"*"|"/"|"&"|"|"|"~"|"="|"<>"|"<"|"<="|">"|">="|"."|","|":"|";"|"("
 
 DELIM2 \+\-\*\/\&\|\~\="<>"\<"<="\>">="\.\,\:\;\(\)\[\]":="\% 
 %%
-"array"|"ARRAY" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"begin"|"BEGIN" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"chr"|"CHR"  {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"const"|"CONST" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"do"|"DO" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"downto"|"DOWNTO" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"else"|"ELSE" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"elseif"|"ELSEIF" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"end"|"END" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"for"|"FOR" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"forward"|"FORWARD" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"function"|"FUNCTION" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"if"|"IF" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"of"|"OF" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"ord"|"ORD" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"pred"|"PRED" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"procedure"|"PROCEDURE" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"read"|"READ" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"record"|"RECORD" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"ref"|"REF" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"repeat"|"REPEAT" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"return"|"RETURN" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"stop"|"STOP" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"succ"|"SUCC" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"then"|"THEN" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"to"|"TO" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"type"|"TYPE" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"until"|"UNTIL" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"var"|"VAR" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"while"|"WHILE" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
-"write"|"WRITE" {std::cout << "Keyword(" << yytext << ")" << std::endl;}
+"array"|"ARRAY"           {return KW_ARRAY;}
+"begin"|"BEGIN"           {return KW_BEGIN;}
+"chr"|"CHR"               {return KW_CHR;}
+"const"|"CONST"           {return KW_CONST;}
+"do"|"DO"                 {return KW_DO;}
+"downto"|"DOWNTO"         {return KW_DOWNTO;}
+"else"|"ELSE"             {return KW_ELSE;}
+"elseif"|"ELSEIF"         {return KW_ELSEIF;}
+"end"|"END"               {return KW_END;}
+"for"|"FOR"               {return KW_FOR;}
+"forward"|"FORWARD"       {return KW_FORWARD;}
+"function"|"FUNCTION"     {return KW_FUNCTION;}
+"if"|"IF"                 {return KW_IF;}
+"of"|"OF"                 {return KW_OF;}
+"ord"|"ORD"               {return KW_ORD;}
+"pred"|"PRED"             {return KW_PRED;}
+"procedure"|"PROCEDURE"   {return KW_PROCEDURE;}
+"read"|"READ"             {return KW_READ;}
+"record"|"RECORD"         {return KW_RECORD;}
+"ref"|"REF"               {return KW_REF;}
+"repeat"|"REPEAT"         {return KW_REPEAT;}
+"return"|"RETURN"         {return KW_RETURN;}
+"stop"|"STOP"             {return KW_STOP;}
+"succ"|"SUCC"             {return KW_SUCC;}
+"then"|"THEN"             {return KW_THEN;}
+"to"|"TO"                 {return KW_TO;}
+"type"|"TYPE"             {return KW_TYPE;}
+"until"|"UNTIL"           {return KW_UNTIL;}
+"var"|"VAR"               {return KW_VAR;} 
+"while"|"WHILE"           {return KW_WHILE;} 
+"write"|"WRITE"           {return KW_WRITE;}
 
 [a-zA-Z][a-zA-Z0-9_]* {
 std::cout << "Identifier(" << yytext << ")" << std::endl;
