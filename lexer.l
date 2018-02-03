@@ -2,11 +2,9 @@
 %{
 #include<iostream>
 #include<cstdlib>
+#include "parser.hpp"
 %}
 
-DELIM "+"|"-"|"*"|"/"|"&"|"|"|"~"|"="|"<>"|"<"|"<="|">"|">="|"."|","|":"|";"|"("|")"|"["|"]"|":="|"%" 
-
-DELIM2 \+\-\*\/\&\|\~\="<>"\<"<="\>">="\.\,\:\;\(\)\[\]":="\% 
 %%
 "array"|"ARRAY"           {return KW_ARRAY;}
 "begin"|"BEGIN"           {return KW_BEGIN;}
@@ -68,6 +66,7 @@ DELIM2 \+\-\*\/\&\|\~\="<>"\<"<="\>">="\.\,\:\;\(\)\[\]":="\%
 "%" {return MOD;}
 
 (0x[0-9a-fA-F]+)|(0[0-7]+)|([1-9][0-9]*)|(0) {
+ yylval.val = atof(yytext);
  return NUMBER; 
 }
 
@@ -77,9 +76,7 @@ DELIM2 \+\-\*\/\&\|\~\="<>"\<"<="\>">="\.\,\:\;\(\)\[\]":="\%
 
 $.*                       {return COMMENT;}
 
-\t|" "+                   {return WHITESPACE;}
-
-\n                        {return NEWLINE;}
+[ \t\r\n]+                 {/*WHITESPACE*/}
 
 
 (_.*)|([0-9][0-9]*([^0-9\t\n \:\;\]\)\]\+\*\,\/\-])) {
@@ -110,10 +107,3 @@ throw std::runtime_error("Empty char constant");
 throw std::runtime_error("Bad const char(" + std::string(yytext) + ")");
 }
 %%
-
-
-int main()
-{
-  yylex();
-}
-

@@ -1,11 +1,12 @@
 %{
 #include <iostream>
 extern int yylex();
+void yyerror(const char*);
 %}
 
 %union
 {
-float val;
+int val;
 }
 
 %token KW_ARRAY
@@ -65,11 +66,7 @@ float val;
 %token RBRACK
 %token ASSIGN
 %token MOD
-%token OPEN
-%token CLOSE
-%token DONE
 %token NUMBER
-%token LVALUE
 
 
 %token CONST_CHAR
@@ -80,84 +77,60 @@ float val;
 
 %type <val> NUMBER
 %type <val> Expression
-%type <val> Factor
-%type <val> Term
+%type <val> Expression2
+%type <val> Expression3
+%type <val> Expression4
+%type <val> Expression5
+%type <val> Expression6
+%type <val> Expression7
+%type <val> Expression8
+
 
 %%
+Program : Statement {}
+        ;
 
-Program : ConstantDecl Program2
-	| Program2
-Program2 : TypeDecl Program3
-         | Program3
-Program3 : VarDecl Program4
-         | Program4
-Program4 : Funkies Block
+Statement : Expression SCOLON {std::cout << $1 << std::endl;}
+          ;
 
-ConstantDecl : KW_CONST ConstDeclList
-
-ConstDeclList : ConstDeclListMore ConstDeclListItem
-
-ConstDeclListMore : ConstDeclListMore ConstDeclListItem
-                  |
-
-ConstDeclListItem : ID EQ Expression SCOLON
-
-Expression : Expression OR Expression2 { $$ = $1 | $3;}
-           | Expression2 { $$ = $1;}
+Expression : Expression OR Expression2 {$$ = $1 || $3;}
+           | Expression2 {$$ = $1;}
            ;
 
-Expression2 : Expression2 AND Expression3 { $$ = $1 & $3;}
-            | Expression3 { $$ = $1;}
+Expression2 : Expression2 AND Expression3 {$$ = $1 && $3;}
+            | Expression3 {$$ = $1;}
             ;
 
-Expression3 : NOT Expression { $$ = !$2;}
-	    | Expression4 { $$ = $1;}
+Expression3 : NOT Expression3 {$$ = !$2;}
+            | Expression4 {$$ = $1;}
             ;
 
-Expression4 : Expression4 EQ Expression5 { $$ = $1 == $3;}
-            | Expression4 DIAM Expression5 { }
-            | Expression4 LT Expression5 {}
-            | Expression4 LEQ Expression5 {}
-            | Expression4 GT Expression5 {}
-            | Expression4 GEQ Expression5 {}
-            | Expression5 {}
+Expression4 : Expression4 EQ Expression5 {$$ = $1 == $3;}
+            | Expression4 LT Expression5 {$$ = $1 < $3;}
+            | Expression4 LEQ Expression5 {$$ = $1 <= $3;}
+            | Expression4 GT Expression5 {$$ = $1 > $3;}
+            | Expression4 GEQ Expression5 {$$ = $1 >= $3;}
+            | Expression5 {$$ = $1;}
             ;
 
-Expression5 : Expression5 ADD Expression6 {}
-            | Expression5 SUB Expression6 {}
-            | Expression6 {}
+Expression5 : Expression5 ADD Expression6 {$$ = $1 + $3;}
+            | Expression5 SUB Expression6 {$$ = $1 - $3;}
+            | Expression6 {$$ = $1;}
             ;
 
-Expression6 : Expression6 MULT Expression7 {}
-            | Expression6 DIV Expression7 {}
-            | Expression6 MOD Expression7 {}
-            | Expression7 {}
+Expression6 : Expression6 MULT Expression7 {$$ = $1 * $3;}
+            | Expression6 DIV Expression7 {$$ = $1 / $3;}
+            | Expression6 MOD Expression7 {$$ = $1 % $3;}
+            | Expression7 {$$ = $1;}
             ;
 
-Expression7 : SUB Expression8 {}
-            | Expression8
+Expression7 : SUB Expression7 {$$ = - $2;}
+            | Expression8 {$$ = $1;}
             ;
 
-Expression8 : OPEN Expression CLOSE {}
-            | NUMBER {}
+Expression8 : LPAREN Expression RPAREN {$$ = $2;}
+            | NUMBER {$$ = $1;}
             ;
-
-Expression2 : LPAREN Expression RPAREN
-
-ExprList : 
-Statement : Expression DONE {std::cout << $1 << std::endl;};
-Expression : Expression ADD Term {$$ = $1 + $3;}
-           | Expression SUB Term {$$ = $1 - $3;}
-           | Term {$$ = $1;};
-
-Term : Term MULT Factor { $$ = $1 * $3;}
-     | Term DIV Factor { $$ = $1 / $3;}
-     | Factor {$$ = $1;}
-     ;
-Factor : OPEN Expression CLOSE {$$ = $2;}
-       | NUMBER {$$ = $1;}
-       ;
-
 %%
 
 void yyerror(const char* s)
