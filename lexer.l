@@ -42,8 +42,6 @@ DELIM2 \+\-\*\/\&\|\~\="<>"\<"<="\>">="\.\,\:\;\(\)\[\]":="\%
 
 [a-zA-Z][a-zA-Z0-9_]*     {return ID;}
 
-{DELIM}                   {return DELIM;}
-
 
 "+" {return ADD;}
 "-" {return SUB;}
