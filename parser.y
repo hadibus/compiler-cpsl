@@ -91,7 +91,13 @@ Program : Block {}
         | ConstantDecl Block {}
         | TypeDecl Block {}
         | ConstantDecl TypeDecl Block {}
+        | VarDecl Block {}
+        | ConstantDecl VarDecl Block {}
+        | TypeDecl VarDecl Block {}
+        | ConstantDecl TypeDecl VarDecl Block {}
         ;
+
+VarDecl : KW_VAR RecordAndVarTypeItems {}
 
 TypeDecl : KW_TYPE TypeDeclItems {};
 
@@ -108,14 +114,14 @@ Type : SimpleType {}
 
 SimpleType : ID {};
 
-RecordType : KW_RECORD RecordTypeItems KW_END {}
+RecordType : KW_RECORD RecordAndVarTypeItems KW_END {}
            | KW_RECORD KW_END;
 
-RecordTypeItems : RecordTypeItems RecordTypeItem {}
-                | RecordTypeItem {}
+RecordAndVarTypeItems : RecordAndVarTypeItems RecordAndVarTypeItem {}
+                | RecordAndVarTypeItem {}
                 ;
 
-RecordTypeItem : ID COLON Type SCOLON {}
+RecordAndVarTypeItem : ID COLON Type SCOLON {}
                | IdListish ID COLON Type SCOLON {}
                ;
 
