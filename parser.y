@@ -69,6 +69,7 @@ float val;
 %token CLOSE
 %token DONE
 %token NUMBER
+%token LVALUE
 
 
 %token CONST_CHAR
@@ -101,24 +102,47 @@ ConstDeclListMore : ConstDeclListMore ConstDeclListItem
 
 ConstDeclListItem : ID EQ Expression SCOLON
 
-Expression : Expression OR Expression
-           | Expression AND Expression
-           | Expression EQ Expression
-           | Expression DIAM Expression
-           | Expression LEQ Expression
-	   | Expression GEQ Expression
-           | Expression LT Expression
-           | Expression GT Expression
-           | Expression ADD Expression
-           | Expression SUB Expression
-           | Expression MULT Expression
-	   | Expression DIV Expression
-           | Expression MOD Expression
-           | NOT Expression
-           | SUB Expression
-	   | LPAREN Expression RPAREN
-           | ID LPAREN ExprList RPAREN
-           ...
+Expression : Expression OR Expression2 { $$ = $1 | $3;}
+           | Expression2 { $$ = $1;}
+           ;
+
+Expression2 : Expression2 AND Expression3 { $$ = $1 & $3;}
+            | Expression3 { $$ = $1;}
+            ;
+
+Expression3 : NOT Expression { $$ = !$2;}
+	    | Expression4 { $$ = $1;}
+            ;
+
+Expression4 : Expression4 EQ Expression5 { $$ = $1 == $3;}
+            | Expression4 DIAM Expression5 { }
+            | Expression4 LT Expression5 {}
+            | Expression4 LEQ Expression5 {}
+            | Expression4 GT Expression5 {}
+            | Expression4 GEQ Expression5 {}
+            | Expression5 {}
+            ;
+
+Expression5 : Expression5 ADD Expression6 {}
+            | Expression5 SUB Expression6 {}
+            | Expression6 {}
+            ;
+
+Expression6 : Expression6 MULT Expression7 {}
+            | Expression6 DIV Expression7 {}
+            | Expression6 MOD Expression7 {}
+            | Expression7 {}
+            ;
+
+Expression7 : SUB Expression8 {}
+            | Expression8
+            ;
+
+Expression8 : OPEN Expression CLOSE {}
+            | NUMBER {}
+            ;
+
+Expression2 : LPAREN Expression RPAREN
 
 ExprList : 
 Statement : Expression DONE {std::cout << $1 << std::endl;};
