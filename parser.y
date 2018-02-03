@@ -43,19 +43,19 @@ int val;
 
 %token ID
 
-%token ADD
-%token SUB
-%token MULT
-%token DIV
-%token AND
-%token OR
-%token NOT
-%token EQ
-%token DIAM
-%token LT
-%token LEQ
-%token GT
-%token GEQ
+%left ADD
+%left SUB
+%left MULT
+%left DIV
+%left AND
+%left OR
+%right NOT
+%nonassoc EQ
+%nonassoc DIAM
+%nonassoc LT
+%nonassoc LEQ
+%nonassoc GT
+%nonassoc GEQ
 %token DOT
 %token COMMA
 %token COLON
@@ -65,7 +65,7 @@ int val;
 %token LBRACK
 %token RBRACK
 %token ASSIGN
-%token MOD
+%left MOD
 %token NUMBER
 
 
@@ -93,15 +93,94 @@ Program : Block {}
 Block : KW_BEGIN StatementSeq KW_END {}
       ;
 
-StatementSeq : StatementSeq Statement {}
-            | {}
+StatementSeq : StatementSeq SCOLON Statement {}
+             | Statement {}
+             ;
+
+Statement : Assignment     {}
+          | IfStatement    {}
+          | WhileStatement {}
+          | RepeatStatement {}
+          | ForStatement    {}
+          | StopStatement   {}
+          | ReturnStatement {}
+          | ReadStatement   {}
+          | WriteStatement  {}
+          | ProcedureCall   {}
+          | NullStatement   {}
+          ;
+
+Assignment : LValue ASSIGN Expression {}
+           ;
+
+LValue : ID {}
+       | ID LValStuff {}
+       ;
+
+LValStuff : LValStuff LValStuffItem {}
+          | LValStuffItem {}
+          ;
+
+LValStuffItem : DOT ID {}
+              | LBRACK Expression RBRACK {}
+              ;
+
+IfStatement : KW_IF Expression KW_THEN StatementSeq KW_END {}
+            | KW_IF Expression KW_THEN StatementSeq ElseifStuff KW_END {}
+            | KW_IF Expression KW_THEN StatementSeq ElseStuff KW_END {}
+            | KW_IF Expression KW_THEN StatementSeq ElseifStuff ElseStuff KW_END {}
+
+ElseifStuff : ElseifStuff ElseifThing {}
+            | ElseifThing {}
             ;
 
-Statement : Expression SCOLON {std::cout << $1 << std::endl;}
+ElseifThing : KW_ELSEIF Expression KW_THEN StatementSeq {};
+
+ElseStuff : KW_ELSE StatementSeq {}
           ;
+
+WhileStatement : KW_WHILE Expression KW_DO StatementSeq KW_END {};
+
+RepeatStatement : KW_REPEAT StatementSeq KW_UNTIL Expression {};
+
+ForStatement : KW_FOR ID ASSIGN Expression KW_TO Expression KW_DO StatementSeq KW_END {}
+             | KW_FOR ID ASSIGN Expression KW_DOWNTO Expression KW_DO StatementSeq KW_END {}
+             ;
+
+StopStatement : KW_STOP {};
+
+ReturnStatement : KW_RETURN Expression {}
+                | KW_RETURN {}
+                ;
+
+ReadStatement : KW_READ LPAREN LValue RPAREN {}
+              | KW_READ LPAREN LValuesList LValue RPAREN {}
+              ;
+
+LValuesList : LValuesList LValue COMMA {}
+            | LValue COMMA {}
+            ;
+
+WriteStatement : KW_WRITE LPAREN Expression RPAREN {}
+               | KW_WRITE LPAREN ExpressionsList Expression RPAREN {};
+
+ExpressionsList : ExpressionsList Expression COMMA {}
+                | Expression COMMA {}
+                ;
+
+ProcedureCall : ID LPAREN ExpressionsList Expression RPAREN {};
+
+NullStatement : {};
 
 Expression : Expression OR Expression2 {$$ = $1 || $3;}
            | Expression2 {$$ = $1;}
+           | ID LPAREN RPAREN {}
+           | ID LPAREN ExpressionsList Expression RPAREN {}
+           | KW_CHR LPAREN Expression RPAREN {}
+           | KW_ORD LPAREN Expression RPAREN {}
+           | KW_PRED LPAREN Expression RPAREN {}
+           | KW_SUCC LPAREN Expression RPAREN {}
+           | LValue {}
            ;
 
 Expression2 : Expression2 AND Expression3 {$$ = $1 && $3;}
