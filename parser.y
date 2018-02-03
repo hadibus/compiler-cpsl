@@ -89,7 +89,41 @@ int val;
 %%
 Program : Block {}
         | ConstantDecl Block {}
+        | TypeDecl Block {}
+        | ConstantDecl TypeDecl Block {}
         ;
+
+TypeDecl : KW_TYPE TypeDeclItems {};
+
+TypeDeclItems : TypeDeclItems TypeDeclItem {}
+              | TypeDeclItem {}
+              ;
+
+TypeDeclItem : ID EQ Type SCOLON {};
+
+Type : SimpleType {}
+     | RecordType {}
+     | ArrayType {}
+     ;
+
+SimpleType : ID {};
+
+RecordType : KW_RECORD RecordTypeItems KW_END {}
+           | KW_RECORD KW_END;
+
+RecordTypeItems : RecordTypeItems RecordTypeItem {}
+                | RecordTypeItem {}
+                ;
+
+RecordTypeItem : ID COLON Type SCOLON {}
+               | IdListish ID COLON Type SCOLON {}
+               ;
+
+IdListish : IdListish ID COMMA {}
+       | ID COMMA {}
+       ;
+
+ArrayType : KW_ARRAY LBRACK Expression COLON Expression RBRACK KW_OF Type {};
 
 ConstantDecl : KW_CONST ConstDeclItems {};
 
