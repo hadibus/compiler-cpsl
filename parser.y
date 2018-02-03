@@ -87,8 +87,15 @@ int val;
 
 
 %%
-Program : Statement {}
+Program : Block {}
         ;
+
+Block : KW_BEGIN StatementSeq KW_END {}
+      ;
+
+StatementSeq : StatementSeq Statement {}
+            | {}
+            ;
 
 Statement : Expression SCOLON {std::cout << $1 << std::endl;}
           ;
