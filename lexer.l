@@ -44,6 +44,31 @@ DELIM2 \+\-\*\/\&\|\~\="<>"\<"<="\>">="\.\,\:\;\(\)\[\]":="\%
 
 {DELIM}                   {return DELIM;}
 
+
+"+" {return ADD;}
+"-" {return SUB;}
+"*" {return MULT;}
+"/" {return DIV;}
+"&" {return AND;}
+"|" {return OR;}
+"~" {return NOT;}
+"=" {return EQ;}
+"<>" {return DIAM;}
+"<" {return LT;}
+"<=" {return LEQ;}
+">" {return GT;}
+">=" {return GEQ;}
+"." {return DOT;}
+"," {return COMMA;}
+":" {return COLON;}
+";" {return SCOLON;}
+"(" {return LPAREN;}
+")" {return RPAREN;}
+"[" {return LBRACK;}
+"]" {return RBRACK;}
+":=" {return ASSIGN;}
+"%" {return MOD;}
+
 (0x[0-9a-fA-F]+)|(0[0-7]+)|([1-9][0-9]*)|(0) {
  return NUMBER; 
 }
