@@ -1,4 +1,5 @@
 %option noyywrap
+%option yylineno
 %{
 #include<iostream>
 #include<cstdlib>
@@ -74,7 +75,7 @@
 
 \"([^\\\"\n]|\\.)+\"      {return CONST_STR;}
 
-$.*                       {return COMMENT;}
+$.*                       {/*COMMENT*/}
 
 [ \t\r\n]+                 {/*WHITESPACE*/}
 

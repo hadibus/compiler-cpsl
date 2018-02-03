@@ -1,6 +1,7 @@
 %{
 #include <iostream>
 extern int yylex();
+extern int yylineno;
 void yyerror(const char*);
 %}
 
@@ -88,21 +89,21 @@ int val;
 
 %%
 Program : Block {}
-        | ConstantDecl Block {}
-        | TypeDecl Block {}
-        | ConstantDecl TypeDecl Block {}
-        | VarDecl Block {}
-        | ConstantDecl VarDecl Block {}
-        | TypeDecl VarDecl Block {}
-        | ConstantDecl TypeDecl VarDecl Block {}
-        | FuncsAndProceds Block {}
-        | ConstantDecl FuncsAndProceds Block {}
-        | TypeDecl FuncsAndProceds Block {}
-        | ConstantDecl TypeDecl FuncsAndProceds Block {}
-        | VarDecl FuncsAndProceds Block {}
-        | ConstantDecl VarDecl FuncsAndProceds Block {}
-        | TypeDecl VarDecl FuncsAndProceds Block {}
-        | ConstantDecl TypeDecl VarDecl FuncsAndProceds Block {}
+        | ConstantDecl Block DOT{}
+        | TypeDecl Block DOT{}
+        | ConstantDecl TypeDecl Block DOT{}
+        | VarDecl Block DOT{}
+        | ConstantDecl VarDecl Block DOT{}
+        | TypeDecl VarDecl Block DOT{}
+        | ConstantDecl TypeDecl VarDecl Block DOT{}
+        | FuncsAndProceds Block DOT{}
+        | ConstantDecl FuncsAndProceds Block DOT{}
+        | TypeDecl FuncsAndProceds Block DOT{}
+        | ConstantDecl TypeDecl FuncsAndProceds Block DOT{}
+        | VarDecl FuncsAndProceds Block DOT{}
+        | ConstantDecl VarDecl FuncsAndProceds Block DOT{}
+        | TypeDecl VarDecl FuncsAndProceds Block DOT{}
+        | ConstantDecl TypeDecl VarDecl FuncsAndProceds Block DOT{}
         ;
 
 FuncsAndProceds : FuncsAndProceds FuncOrProced {}
@@ -125,20 +126,13 @@ FunctionDecl : KW_FUNCTION ID LPAREN RPAREN COLON Type SCOLON KW_FORWARD SCOLON 
              | KW_FUNCTION ID LPAREN FormalParameters RPAREN COLON Type SCOLON Body SCOLON {}
              ;
 
-FormalParameters : FormalParamItems FormalParamItem {}
-                 | FormalParamItem {}
+FormalParameters : FormalParameters SCOLON FormalParameter {}
+                 | FormalParameter {}
                  ;
 
-FormalParamItems : FormalParamItems FormalParamItem SCOLON {}
-                 | FormalParamItem SCOLON {}
-                 ;
-
-FormalParamItem : ID COLON Type {}
-                | KW_VAR ID COLON Type {}
-                | KW_REF ID COLON Type {}
-                | IdListish ID COLON Type {}
-                | KW_VAR IdListish ID COLON Type {}
-                | KW_REF IdListish ID COLON Type {}
+FormalParameter : IdList COLON Type {}
+                | KW_VAR IdList COLON Type {}
+                | KW_REF IdList COLON Type {}
                 ;
 
 Body : Block {}
@@ -151,7 +145,7 @@ Body : Block {}
      | ConstantDecl TypeDecl VarDecl Block {}
      ;
 
-VarDecl : KW_VAR RecordAndVarTypeItems {}
+VarDecl : KW_VAR RecordAndVarTypeItems {};
 
 TypeDecl : KW_TYPE TypeDeclItems {};
 
@@ -169,18 +163,17 @@ Type : SimpleType {}
 SimpleType : ID {};
 
 RecordType : KW_RECORD RecordAndVarTypeItems KW_END {}
-           | KW_RECORD KW_END;
+           | KW_RECORD KW_END {}
+           ;
 
 RecordAndVarTypeItems : RecordAndVarTypeItems RecordAndVarTypeItem {}
                 | RecordAndVarTypeItem {}
                 ;
 
-RecordAndVarTypeItem : ID COLON Type SCOLON {}
-               | IdListish ID COLON Type SCOLON {}
-               ;
+RecordAndVarTypeItem : IdList COLON Type SCOLON {};
 
-IdListish : IdListish ID COMMA {}
-       | ID COMMA {}
+IdList : IdList COMMA ID {}
+       | ID {}
        ;
 
 ArrayType : KW_ARRAY LBRACK Expression COLON Expression RBRACK KW_OF Type {};
@@ -193,8 +186,7 @@ ConstDeclItems : ConstDeclItems ConstDeclItem {}
 
 ConstDeclItem : ID EQ Expression SCOLON {};
 
-Block : KW_BEGIN StatementSeq KW_END {}
-      ;
+Block : KW_BEGIN StatementSeq KW_END {};
 
 StatementSeq : StatementSeq SCOLON Statement {}
              | Statement {}
@@ -264,26 +256,26 @@ LValuesList : LValuesList LValue COMMA {}
             | LValue COMMA {}
             ;
 
-WriteStatement : KW_WRITE LPAREN Expression RPAREN {}
-               | KW_WRITE LPAREN ExpressionsList Expression RPAREN {};
+WriteStatement : KW_WRITE LPAREN ExpressionsList RPAREN {};
 
-ExpressionsList : ExpressionsList Expression COMMA {}
-                | Expression COMMA {}
+ExpressionsList : ExpressionsList COMMA Expression {}
+                | Expression {}
                 ;
 
-ProcedureCall : ID LPAREN ExpressionsList Expression RPAREN {};
+ProcedureCall : ID LPAREN ExpressionsList RPAREN {}
+              | ID LPAREN RPAREN {}
+              ;
 
 NullStatement : {};
 
 Expression : Expression OR Expression2 {$$ = $1 || $3;}
            | Expression2 {$$ = $1;}
            | ID LPAREN RPAREN {}
-           | ID LPAREN ExpressionsList Expression RPAREN {}
+           | ID LPAREN ExpressionsList RPAREN {}
            | KW_CHR LPAREN Expression RPAREN {}
            | KW_ORD LPAREN Expression RPAREN {}
            | KW_PRED LPAREN Expression RPAREN {}
            | KW_SUCC LPAREN Expression RPAREN {}
-           | LValue {}
            ;
 
 Expression2 : Expression2 AND Expression3 {$$ = $1 && $3;}
@@ -320,10 +312,11 @@ Expression7 : SUB Expression7 {$$ = - $2;}
 
 Expression8 : LPAREN Expression RPAREN {$$ = $2;}
             | NUMBER {$$ = $1;}
+            | LValue {}
             ;
 %%
 
 void yyerror(const char* s)
 {
-  std::cout << s << std::endl;
+  std::cout << s << " at line " << yylineno << std::endl;
 }
