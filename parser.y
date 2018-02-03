@@ -95,7 +95,61 @@ Program : Block {}
         | ConstantDecl VarDecl Block {}
         | TypeDecl VarDecl Block {}
         | ConstantDecl TypeDecl VarDecl Block {}
+        | FuncsAndProceds Block {}
+        | ConstantDecl FuncsAndProceds Block {}
+        | TypeDecl FuncsAndProceds Block {}
+        | ConstantDecl TypeDecl FuncsAndProceds Block {}
+        | VarDecl FuncsAndProceds Block {}
+        | ConstantDecl VarDecl FuncsAndProceds Block {}
+        | TypeDecl VarDecl FuncsAndProceds Block {}
+        | ConstantDecl TypeDecl VarDecl FuncsAndProceds Block {}
         ;
+
+FuncsAndProceds : FuncsAndProceds FuncOrProced {}
+                | FuncOrProced {}
+                ;
+
+FuncOrProced : FunctionDecl {}
+             | ProcedureDecl {}
+             ;
+
+ProcedureDecl : KW_PROCEDURE ID LPAREN RPAREN SCOLON KW_FORWARD SCOLON {}
+              | KW_PROCEDURE ID LPAREN RPAREN SCOLON Body SCOLON {}
+              | KW_PROCEDURE ID LPAREN FormalParameters RPAREN SCOLON KW_FORWARD SCOLON {}
+              | KW_PROCEDURE ID LPAREN FormalParameters RPAREN SCOLON Body SCOLON {}
+              ;
+
+FunctionDecl : KW_FUNCTION ID LPAREN RPAREN COLON Type SCOLON KW_FORWARD SCOLON {}
+             | KW_FUNCTION ID LPAREN RPAREN COLON Type SCOLON Body SCOLON {}
+             | KW_FUNCTION ID LPAREN FormalParameters RPAREN COLON Type SCOLON KW_FORWARD SCOLON {}
+             | KW_FUNCTION ID LPAREN FormalParameters RPAREN COLON Type SCOLON Body SCOLON {}
+             ;
+
+FormalParameters : FormalParamItems FormalParamItem {}
+                 | FormalParamItem {}
+                 ;
+
+FormalParamItems : FormalParamItems FormalParamItem SCOLON {}
+                 | FormalParamItem SCOLON {}
+                 ;
+
+FormalParamItem : ID COLON Type {}
+                | KW_VAR ID COLON Type {}
+                | KW_REF ID COLON Type {}
+                | IdListish ID COLON Type {}
+                | KW_VAR IdListish ID COLON Type {}
+                | KW_REF IdListish ID COLON Type {}
+                ;
+
+Body : Block {}
+     | ConstantDecl Block {}
+     | TypeDecl Block {}
+     | ConstantDecl TypeDecl Block {}
+     | VarDecl Block {}
+     | ConstantDecl VarDecl Block {}
+     | TypeDecl VarDecl Block {}
+     | ConstantDecl TypeDecl VarDecl Block {}
+     ;
 
 VarDecl : KW_VAR RecordAndVarTypeItems {}
 
@@ -241,6 +295,7 @@ Expression3 : NOT Expression3 {$$ = !$2;}
             ;
 
 Expression4 : Expression4 EQ Expression5 {$$ = $1 == $3;}
+            | Expression4 DIAM Expression5 {}
             | Expression4 LT Expression5 {$$ = $1 < $3;}
             | Expression4 LEQ Expression5 {$$ = $1 <= $3;}
             | Expression4 GT Expression5 {$$ = $1 > $3;}
