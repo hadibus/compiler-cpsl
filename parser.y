@@ -88,7 +88,16 @@ int val;
 
 %%
 Program : Block {}
+        | ConstantDecl Block {}
         ;
+
+ConstantDecl : KW_CONST ConstDeclItems {};
+
+ConstDeclItems : ConstDeclItems ConstDeclItem {}
+               | ConstDeclItem {}
+               ;
+
+ConstDeclItem : ID EQ Expression SCOLON {};
 
 Block : KW_BEGIN StatementSeq KW_END {}
       ;
