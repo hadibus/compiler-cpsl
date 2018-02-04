@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(compiler)
+project(syntax_analyzer)
 
 find_package(BISON)
 find_package(FLEX)
@@ -18,9 +18,9 @@ set(srcs
   ${BISON_Parser_OUTPUTS}
   ${FLEX_Scanner_OUTPUTS}
 )
-source_group("Compiler" FILES ${srcs})
+source_group("Syntax analyzer" FILES ${srcs})
 
-add_executable(compiler ${srcs})
+add_executable(syntax_analyzer ${srcs})
 
-target_link_libraries(compiler  ${FLEX_LIBRARIES} ${BISON_LIBRARIES})
+target_link_libraries(syntax_analyzer  ${FLEX_LIBRARIES} ${BISON_LIBRARIES})
 
