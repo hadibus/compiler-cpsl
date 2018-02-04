@@ -5,7 +5,7 @@ find_package(BISON)
 find_package(FLEX)
 
 bison_target(Parser parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
-flex_target(Scanner lexer.l ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
+flex_target(Scanner scanner.l ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp)
 add_flex_bison_dependency(Scanner Parser)
 
 set(EXTRA_COMPILE_FLAGS "-g3 -std=c++14")
