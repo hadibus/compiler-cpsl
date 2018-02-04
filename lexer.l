@@ -80,7 +80,7 @@ $.*                       {/*COMMENT*/}
 [ \t\r\n]+                 {/*WHITESPACE*/}
 
 
-(_.*)|([0-9][0-9]*([^0-9\t\n \:\;\]\)\]\+\*\,\/\-])) {
+(_.*)|([0-9][0-9]*([^0-9\t\n \:\;\]\)\]\+\*\,\/\-=%<>])) {
 throw std::runtime_error("Unidentified expression(" + std::string(yytext) + ")");
 }
 
