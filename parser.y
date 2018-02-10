@@ -2,6 +2,7 @@
 #include <iostream>
 extern int yylex();
 extern int yylineno;
+extern char * yytext;
 void yyerror(const char*);
 %}
 
@@ -90,7 +91,7 @@ int val;
 
 %%
 ArrayType : KW_ARRAY LBRACK Expression COLON Expression RBRACK KW_OF Type {};
-Assignment : LValue ASSIGN Expression {}
+Assignment : LValue ASSIGN Expression {};
 Body : Block                               {}
      | ConstantDecl Block                  {}
      | TypeDecl Block                      {}
@@ -205,7 +206,7 @@ ProcedureDecl : KW_PROCEDURE ID LPAREN RPAREN SCOLON KW_FORWARD SCOLON          
               | KW_PROCEDURE ID LPAREN FormalParameters RPAREN SCOLON KW_FORWARD SCOLON {}
               | KW_PROCEDURE ID LPAREN FormalParameters RPAREN SCOLON Body SCOLON       {}
               ;
-Program : Block                                                   {}
+Program : Block DOT                                               {}
         | ConstantDecl Block DOT                                  {}
         | TypeDecl Block DOT                                      {}
         | ConstantDecl TypeDecl Block DOT                         {}
@@ -269,5 +270,6 @@ WriteStatement : KW_WRITE LPAREN ExpressionsList RPAREN {};
 
 void yyerror(const char* s)
 {
-  std::cout << s << " at line " << yylineno << std::endl;
+  std::cout << s << " at line " << yylineno;
+  std::cout << " near \"" << yytext << "\"" << std::endl;
 }
