@@ -1,110 +1,86 @@
-%option noyywrap
-%option yylineno
 %{
-#include<iostream>
-#include<cstdlib>
+#include <cstring>
+#include <cstdlib>
+
 #include "parser.hpp"
 %}
 
+%option nounput
+
 %%
-"array"|"ARRAY"           {return KW_ARRAY;}
-"begin"|"BEGIN"           {return KW_BEGIN;}
-"chr"|"CHR"               {return KW_CHR;}
-"const"|"CONST"           {return KW_CONST;}
-"do"|"DO"                 {return KW_DO;}
-"downto"|"DOWNTO"         {return KW_DOWNTO;}
-"else"|"ELSE"             {return KW_ELSE;}
-"elseif"|"ELSEIF"         {return KW_ELSEIF;}
-"end"|"END"               {return KW_END;}
-"for"|"FOR"               {return KW_FOR;}
-"forward"|"FORWARD"       {return KW_FORWARD;}
-"function"|"FUNCTION"     {return KW_FUNCTION;}
-"if"|"IF"                 {return KW_IF;}
-"of"|"OF"                 {return KW_OF;}
-"ord"|"ORD"               {return KW_ORD;}
-"pred"|"PRED"             {return KW_PRED;}
-"procedure"|"PROCEDURE"   {return KW_PROCEDURE;}
-"read"|"READ"             {return KW_READ;}
-"record"|"RECORD"         {return KW_RECORD;}
-"ref"|"REF"               {return KW_REF;}
-"repeat"|"REPEAT"         {return KW_REPEAT;}
-"return"|"RETURN"         {return KW_RETURN;}
-"stop"|"STOP"             {return KW_STOP;}
-"succ"|"SUCC"             {return KW_SUCC;}
-"then"|"THEN"             {return KW_THEN;}
-"to"|"TO"                 {return KW_TO;}
-"type"|"TYPE"             {return KW_TYPE;}
-"until"|"UNTIL"           {return KW_UNTIL;}
-"var"|"VAR"               {return KW_VAR;} 
-"while"|"WHILE"           {return KW_WHILE;} 
-"write"|"WRITE"           {return KW_WRITE;}
 
-[a-zA-Z][a-zA-Z0-9_]*     {return ID;}
+array|ARRAY         {return ARRAYSY;}
+begin|BEGIN         {return BEGINSY;}
+chr|CHR             {return CHRSY;}
+const|CONST         {return CONSTSY;} 
+downto|DOWNTO       {return DOWNTOSY;} 
+do|DO               {return DOSY;} 
+else|ELSE           {return ELSESY;}
+elseif|ELSEIF       {return ELSEIFSY;}
+end|END             {return ENDSY;} 
+forward|FORWARD     {return FORWARDSY;} 
+for|FOR             {return FORSY;} 
+function|FUNCTION   {return FUNCTIONSY;} 
+if|IF               {return IFSY;}
+of|OF               {return OFSY;}
+ord|ORD             {return ORDSY;} 
+pred|PRED           {return PREDSY;} 
+procedure|PROCEDURE {return PROCEDURESY;}
+read|READ           {return READSY;} 
+record|RECORD       {return RECORDSY;}
+repeat|REPEAT       {return REPEATSY;}
+return|RETURN       {return RETURNSY;} 
+stop|STOP           {return STOPSY;}
+succ|SUCC           {return SUCCSY;}
+then|THEN           {return THENSY;} 
+to|TO               {return TOSY;}
+type|TYPE           {return TYPESY;}
+until|UNTIL         {return UNTILSY;}
+var|VAR             {return VARSY;}
+ref|REF             {return REFSY;}
+while|WHILE         {return WHILESY;}
+write|WRITE         {return WRITESY;} 
 
+"%"  {return MODSY;}
+"&"  {return ANDSY;}  
+"("  {return LPARENSY;} 
+")"  {return RPARENSY;} 
+"*"  {return MULTSY;} 
+"+"  {return PLUSSY;}
+","  {return COMMASY;}
+"-"  {return MINUSSY;} 
+"."  {return DOTSY;}
+"/"  {return DIVSY;}
+":"  {return COLONSY;}
+":=" {return ASSIGNSY;}
+";"  {return SCOLONSY;} 
+"<"  {return LTSY;} 
+"<=" {return LTESY;} 
+"<>" {return NEQSY;} 
+"="  {return EQSY;}
+">"  {return GTSY;}
+">=" {return GTESY;} 
+"["  {return LBRACKETSY;} 
+"]"  {return RBRACKETSY;}
+"|"  {return ORSY;}
+"~"  {return NOTSY;}
 
-"+" {return ADD;}
-"-" {return SUB;}
-"*" {return MULT;}
-"/" {return DIV;}
-"&" {return AND;}
-"|" {return OR;}
-"~" {return NOT;}
-"=" {return EQ;}
-"<>" {return DIAM;}
-"<" {return LT;}
-"<=" {return LEQ;}
-">" {return GT;}
-">=" {return GEQ;}
-"." {return DOT;}
-"," {return COMMA;}
-":" {return COLON;}
-";" {return SCOLON;}
-"(" {return LPAREN;}
-")" {return RPAREN;}
-"[" {return LBRACK;}
-"]" {return RBRACK;}
-":=" {return ASSIGN;}
-"%" {return MOD;}
+[a-zA-Z][a-zA-Z0-9_]* {yylval.str_val = strdup(yytext); return IDENTSY;}
 
-(0x[0-9a-fA-F]+)|(0[0-7]+)|([1-9][0-9]*)|(0) {
- yylval.val = atof(yytext);
- return NUMBER; 
-}
+[0][0-7]+          {yylval.int_val = strtol(yytext,nullptr,0);return INTSY;}
+[0][x][0-9a-fA-F]+ {yylval.int_val = strtol(yytext,nullptr,0);return INTSY;}
+[0-9]+[0-9]*       {yylval.int_val = strtol(yytext,nullptr,0);return INTSY;}
 
-'.'|'\\.'                 {return CONST_CHAR;}
+'\\n'               {yylval.char_val = '\n';return CHARCONSTSY;}
+'\\t'               {yylval.char_val = '\t';return CHARCONSTSY;}
+'\\r'               {yylval.char_val = '\r';return CHARCONSTSY;}
+'\\?.'             {yylval.char_val = yytext[1];return CHARCONSTSY;}
 
-\"([^\\\"\n]|\\.)+\"      {return CONST_STR;}
+\"[a-zA-Z0-9~`!@'#$%^&*()_+=\-\[\]{}\\\/><,.:;| ]*\" {yylval.str_val = strdup(yytext); return STRINGSY;}
 
-$.*                       {/*COMMENT*/}
+\$.*$ {}
+\n {}
+[ \t]+ {}
+. {}
 
-[ \t\r\n]+                 {/*WHITESPACE*/}
-
-
-(_.*)|([0-9][0-9]*([^0-9\t\n \:\;\]\)\]\+\*\,\/\-=%<>])) {
-throw std::runtime_error("Unidentified expression(" + std::string(yytext) + ")");
-}
-
-(0x[0-9a-fA-F]*[^0-9a-fA-F\t\n ])|(0[0-7]*[8-9]) {
-throw std::runtime_error("Bad integer(" + std::string(yytext) + ")");
-}
-
-\"[^\n\"]*\n {
-throw std::runtime_error("Newline char in string(" + std::string(yytext) + ")");
-}
-
-'\n' {
-throw std::runtime_error("Newline char in const char(" + std::string(yytext) + ")");
-}
-
-\"\" {
-throw std::runtime_error("Empty string constant");
-}
-
-'' {
-throw std::runtime_error("Empty char constant");
-}
-
-'[^\\]. {
-throw std::runtime_error("Bad const char(" + std::string(yytext) + ")");
-}
 %%
