@@ -131,15 +131,15 @@ Program : ProgramHead Block DOTSY {}
 ProgramHead : OptConstDecls OptTypeDecls OptVarDecls PFDecls
             ;
 OptConstDecls : CONSTSY ConstDecls
-							|
-							;
+	      |
+	      ;
 
 ConstDecls : ConstDecls ConstDecl
-					 | ConstDecl
-					 ;
+	   | ConstDecl
+           ;
 
 ConstDecl : IDENTSY EQSY Expression SCOLONSY {}
-					;
+	  ;
 
 PFDecls : PFDecls ProcedureDecl
         | PFDecls FunctionDecl
@@ -148,14 +148,14 @@ PFDecls : PFDecls ProcedureDecl
 
 ProcedureDecl : PSignature SCOLONSY FORWARDSY SCOLONSY {}
               | PSignature SCOLONSY Body SCOLONSY {}
-				    	;
+	      ;
 
 PSignature : PROCEDURESY IDENTSY LPARENSY OptFormalParameters RPARENSY {}
            ;
 
 FunctionDecl : FSignature SCOLONSY FORWARDSY SCOLONSY {}
-						 | FSignature SCOLONSY Body SCOLONSY {}
-						 ;
+	     | FSignature SCOLONSY Body SCOLONSY {}
+             ;
 
 FSignature : FUNCTIONSY IDENTSY LPARENSY OptFormalParameters RPARENSY COLONSY Type {}
            ;
@@ -260,7 +260,7 @@ ThenPart : THENSY StatementList {}
          ;
 
 ElseIfList : ElseIfList ElseIfHead ThenPart {}
-           |{}
+           | {}
            ;
 
 ElseIfHead : ELSEIFSY Expression {}
@@ -277,6 +277,7 @@ WhileHead : WHILESY Expression {}
           ;
 
 RepeatStatement : REPEATSY StatementList UNTILSY Expression {}
+                ;
 
 ForStatement : ForHead ToHead DOSY StatementList ENDSY{}
              ;
