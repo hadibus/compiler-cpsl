@@ -320,7 +320,7 @@ Arguments : Arguments COMMASY Expression {}
           | Expression                   {}
           ;
 
-Expression : CHARCONSTSY                         {}
+Expression : CHARCONSTSY                         {$$ = $1;}
            | CHRSY LPARENSY Expression RPARENSY  {}
            | Expression ANDSY Expression         {}
            | Expression DIVSY Expression         {}
