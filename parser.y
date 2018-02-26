@@ -2,8 +2,11 @@
 #include <iostream>
 #include <fstream>
 
+#include "SymbolTable.hpp"
+
 extern int yylex();
 void yyerror(const char*);
+SymbolTable symbol_table;
 %}
 
 %union

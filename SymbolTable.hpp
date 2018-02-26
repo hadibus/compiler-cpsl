@@ -27,9 +27,11 @@ public:
     void storeType(std::string, Type*);
     void storeConst(std::string, Type*, int);
     void storeVar(std::string, Type*, int, std::string);
+    int storeStringLiteral(std::string);
     void checkForIdDefined(std::string);
     void enterScope();
     void leaveScope();
+    Type* getPrimativeType(std::string);
 private:
     std::vector<SymbolTableLayer> stack;
     std::vector<Type> primativeTypes;

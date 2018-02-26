@@ -13,8 +13,11 @@ set(EXTRA_COMPILE_FLAGS "-g3 -std=c++14")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 
+include_directories(${PROJECT_SOURCE_DIR})
+
 set(cpsl_srcs
-  codeGenerator.cpp
+  SymbolTable.cpp
+  CodeGenerator.cpp
   main.cpp
   ${BISON_Parser_OUTPUTS}
   ${FLEX_Scanner_OUTPUTS}

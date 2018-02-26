@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <algorithm>
 
 #include "SymbolTable.hpp"
 
@@ -68,17 +69,39 @@ Type * SymbolTable::lookupType(std::string id)
 
 void SymbolTable::storeType(std::string id, Type* t)
 {
-    auto topLayer = stack.rbegin();
     checkForIdDefined(id);
+    auto topLayer = stack.rbegin();
     topLayer->types[id] = t;
 }
 
 void SymbolTable::storeConst(std::string id, Type* t, int val)
 {
-    auto topLayer = stack.rbegin();
     checkForIdDefined(id);
-    topLayer->constants[id] = t;
+    auto topLayer = stack.rbegin();
+    Constant c;
+    c.type = t;
+    c.value = val;
+    topLayer->constants[id] = c;
 }
+
+void SymbolTable::storeVar(std::string id, Type* t, int, std::string reg)
+{
+    checkForIdDefined(id);
+    auto topLayer = stack.rbegin();
+    Variable v;
+    v.offset = offset;
+    offset += 4;
+    v.reg = reg;
+    v.type = t;
+    topLayer->variables[id] = v;
+}
+
+int SymbolTable::storeStringLiteral(std::string s)
+{
+    stringList.push_back(s);
+    return(stringList.size() - 1);
+}
+
 
 void SymbolTable::checkForIdDefined(std::string id)
 {
@@ -92,6 +115,23 @@ void SymbolTable::checkForIdDefined(std::string id)
         throw std::runtime_error("Type " + id + " is already defined in this scope");
     }
 }
-    void storeVar(std::string, Type*, int, std::string);
-    void enterScope();
-    void leaveScope();
+
+void SymbolTable::enterScope()
+{
+    stack.emplace_back();
+}
+
+void SymbolTable::leaveScope()
+{
+    stack.pop_back();
+}
+
+Type* SymbolTable::getPrimativeType(std::string s)
+{
+    auto found = std::find(primativeTypes.begin(), primativeTypes.end(), s);
+    if (found == primativeTypes.end())
+    {
+        throw std::domain_error("Primative type " + s + " not found");
+    }
+    return &(*found);
+}

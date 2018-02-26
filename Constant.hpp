@@ -2,12 +2,8 @@
 #define CONSTANT_HPP
 
 #include "Type.hpp"
+#include "Value.hpp"
 
-struct Constant
-{
-    Constant() : type(nullptr), value(0){};
-    Type * type;
-    int value;
-};
+struct Constant : public Value {};
 
 #endif
