@@ -32,6 +32,7 @@ public:
     void enterScope();
     void leaveScope();
     Type* getPrimativeType(std::string);
+    std::vector<std::string> getStringList();
 private:
     std::vector<SymbolTableLayer> stack;
     std::vector<Type> primativeTypes;

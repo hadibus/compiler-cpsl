@@ -13,7 +13,13 @@ public:
     CodeGenerator() : st()
     {
         st.initialize();
+        printHeader();
     };
+
+    ~CodeGenerator()
+    {
+        printFooter();
+    }
 
     void assertIntOrChar(Value);
 
@@ -38,6 +44,11 @@ public:
     Value binOpOr(Value, Value);
 
     Value binOpSub(Value, Value);
+
+    void printHeader();
+    void printFooter();
+
+    
 
     int unOpNeg(int);
     int unOpNot(int);

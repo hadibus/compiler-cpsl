@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "CodeGenerator.hpp"
 #include "Value.hpp"
 
@@ -47,6 +49,35 @@
         val.value = st.storeStringLiteral(cstr);
         val.type = st.getPrimativeType("string");
         return val;
+    }
+
+    void CodeGenerator::printHeader()
+    {
+        std::cout
+        << ".text" << std::endl
+        << ".globl main" << std::endl
+        << std::endl
+        << "main:" << std::endl
+	    << "la $gp, GA" << std::endl
+	    << "j real_main" << std::endl
+        << std::endl
+        << "real_main:" << std::endl;
+    }
+
+    void CodeGenerator::printFooter()
+    {
+        std::cout 
+        << "\tli $a0, 0" << std::endl
+        << "\tli $v0, 17" << std::endl
+        << std::endl
+        << ".data" << std::endl
+        << ".asciiz" << std::endl;
+        auto sl = st.getStringList();
+        for (auto i = 0U; i < sl.size(); i++)
+        {
+            std::cout << "STR" << i << ": \"" << sl[i] << "\"" << std::endl;
+        }
+        std::cout << "GA:" << std::endl;
     }
 
    /*
