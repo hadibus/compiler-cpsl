@@ -136,7 +136,7 @@ Type* SymbolTable::getPrimativeType(std::string s)
     return &(*found);
 }
 
-std::vector<std::string> getStringList()
+std::vector<std::string> SymbolTable::getStringList()
 {
     return stringList;
 }
