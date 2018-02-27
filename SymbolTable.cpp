@@ -176,3 +176,15 @@ std::vector<std::string> SymbolTable::getStringList()
 {
     return stringList;
 }
+
+std::shared_ptr<std::string> SymbolTable::requestRegister()
+{
+    for (auto & reg : regPool)
+    {
+        if(reg.unique())
+        {
+            return reg;
+        }
+    }
+    throw std::logic_error("Depleted register pool");
+}

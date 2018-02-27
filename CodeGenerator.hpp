@@ -24,8 +24,9 @@ public:
 
     void assertIntOrChar(int);
     void appendStrList(char*);
-    void makeVars(int, std::string reg = "&gp");
-    int getLVal(std::string);
+    void makeVars(int, std::string reg = "$gp");
+    int getLval(std::string);
+    int assignExprToLval(int,int);
     void clearExpressions();
     int charLiteral(char);
     int charCast(int);

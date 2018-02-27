@@ -2,7 +2,7 @@
 
 #include "CodeGenerator.hpp"
 #include "FoldExpression.hpp"
-#include "RegisterExpression.hpp"
+#include "LvalExpression.hpp"
 
     int CodeGenerator::charLiteral(char c)
     {
@@ -35,8 +35,8 @@
     int CodeGenerator::intLiteral(int i)
     {
         FoldExpression *fe = new FoldExpression();
-        fe->setValue(i);
         fe->setType(st.getPrimativeType("integer"));
+        fe->setValue(i);
         expressions.push_back(fe);
         return expressions.size() - 1;
     }
@@ -90,9 +90,71 @@
             }
 
         }
+        else if (auto le = dynamic_cast<LvalExpression*>(e))
+        {
+            auto reg = st.requestRegister();
+            if (le->getType() == st.getPrimativeType("string"))
+            {
+                std::cout
+                << "\tlw " << *reg << ", " << le->getOffset() 
+                    << "(" << *le->getRegister() << ")" << std::endl
+                << "\tla $a0, (" << *reg << ")" << std::endl
+                << "\tli $v0, 4" << std::endl
+                << "\tsyscall" << std::endl;
+            }
+            else if (le->getType() == st.getPrimativeType("char"))
+            {
+                std::cout
+                << "\tlw " << *reg << ", " << le->getOffset() 
+                    << "(" << *le->getRegister() << ")" << std::endl
+                << "\tla $a0, (" << *reg << ")" << std::endl
+                << "\tli $v0, 11" << std::endl
+                << "\tsyscall" << std::endl;
+            }
+            else if (le->getType() == st.getPrimativeType("integer")
+                  || le->getType() == st.getPrimativeType("boolean"))
+            {
+                std::cout
+                << "\tlw " << *reg << ", " << le->getOffset() 
+                    << "(" << *le->getRegister() << ")" << std::endl
+                << "\tla $a0, (" << *reg << ")" << std::endl
+                << "\tli $v0, 1" << std::endl
+                << "\tsyscall" << std::endl;
+            }
+            else
+            {
+                throw std::logic_error("This type aint defined!");
+            }
+        }
         else if (auto re = dynamic_cast<RegisterExpression*>(e))
         {
-            //TODO work with register values.
+            if (re->getType() == st.getPrimativeType("string"))
+            {
+                std::cout
+                << "\tla $a0, " << *re->getRegister() << std::endl
+                << "\tli $v0, 4" << std::endl
+                << "\tsyscall" << std::endl;
+            }
+            else if (re->getType() == st.getPrimativeType("char"))
+            {
+                std::cout
+                << "\tla $a0, " << *re->getRegister() << std::endl
+                << "\tli $v0, 11" << std::endl
+                << "\tsyscall" << std::endl;
+            }
+            else if (re->getType() == st.getPrimativeType("integer")
+                  || re->getType() == st.getPrimativeType("boolean"))
+            {
+                std::cout
+                << "\tla $a0, " << *re->getRegister() << std::endl
+                << "\tli $v0, 1" << std::endl
+                << "\tsyscall" << std::endl;
+            }
+            else
+            {
+                throw std::logic_error("This type aint defined!");
+            }
+
         }
         else
         {
@@ -173,7 +235,7 @@
         tempStrList.clear();
     }
 
-    int CodeGenerator::getLVal(std::string lval)
+    int CodeGenerator::getLval(std::string lval)
     {
         auto c = st.lookupConst(lval);
         auto v = st.lookupVar(lval);
@@ -187,10 +249,56 @@
         }
         else if (v.reg != "")
         {
-            
+            LvalExpression *le = new LvalExpression();
+            le->setRegister(std::make_shared<std::string>(v.reg));
+            le->setOffset(v.offset);
+            le->setType(v.type);
+            expressions.push_back(le);
+            return expressions.size() - 1;
+        }
+        else
+        {
+            throw std::logic_error("Lval" + lval + " is a const and variable");
         }
 
+    }
 
+    int CodeGenerator::assignExprToLval(int li, int ei)
+    {
+        std::cerr << li << std::endl;
+        auto lvale = dynamic_cast<LvalExpression*>(expressions[li]);
+        auto expr = expressions[ei];
+
+        if(!lvale)
+        {
+            throw std::logic_error("lval is not RegisterExpression");
+        }
+        if (lvale->getType() != expr->getType())
+        {
+            throw std::runtime_error("Types do not match");
+        }
+
+        if (auto fe = dynamic_cast<FoldExpression*>(expr))
+        {
+            auto reg = st.requestRegister();
+            std::cout
+            << "\tli " << *reg << ", " << fe->getValue() << std::endl
+            << "\tsw " << *reg << ", " << lvale->getOffset() 
+                << "(" << *lvale->getRegister() << ")" << std::endl;
+
+        }
+        else if (auto re = dynamic_cast<RegisterExpression*>(expr))
+        {
+            std::cout
+            << "\tsw" << *re->getRegister() << ", " << lvale->getOffset() 
+                << "(" << *lvale->getRegister() << ")" << std::endl;
+        }
+        else
+        {
+            throw std::logic_error("assignment expression bad");
+        }
+
+        return ei;
 
     }
 

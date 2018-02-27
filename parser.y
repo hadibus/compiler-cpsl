@@ -250,7 +250,7 @@ Statement : Assignment {}
           | {}
           ;
 
-Assignment : LValue ASSIGNSY Expression {}
+Assignment : LValue ASSIGNSY Expression {code_gen.assignExprToLval($1, $3);}
            ;
 
 IfStatement : IfHead ThenPart ElseIfList ElseClause ENDSY {}
@@ -339,7 +339,7 @@ Expression : CHARCONSTSY                         {$$ = code_gen.charLiteral(yylv
            | Expression ORSY Expression          {}
            | Expression PLUSSY Expression        {}
            | FunctionCall                        {}
-           | INTSY                               {}
+           | INTSY                               {$$ = code_gen.intLiteral($1);}
            | LPARENSY Expression RPARENSY        {}
            | LValue                              {}
            | MINUSSY Expression %prec UMINUSSY   {}
@@ -355,7 +355,7 @@ FunctionCall : IDENTSY LPARENSY OptArguments RPARENSY {}
 
 LValue : LValue DOTSY IDENTSY {}
        | LValue LBRACKETSY Expression RBRACKETSY {}
-       | IDENTSY {}
+       | IDENTSY {$$ = code_gen.getLval($1);}
        ;
 %%
 

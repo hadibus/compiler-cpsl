@@ -32,6 +32,7 @@ public:
     void checkForIdDefined(std::string);
     void enterScope();
     void leaveScope();
+    std::shared_ptr<std::string> requestRegister();
     Type* getPrimativeType(std::string);
     Type* getPrimativeType(int);
     std::vector<std::string> getStringList();
