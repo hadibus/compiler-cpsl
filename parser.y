@@ -292,7 +292,7 @@ ToHead : TOSY Expression {}
        | DOWNTOSY Expression {}
        ;
 
-StopStatement : STOPSY {}
+StopStatement : STOPSY {code_gen.doStop();}
               ;
 
 ReturnStatement : RETURNSY Expression {}

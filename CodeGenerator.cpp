@@ -93,67 +93,54 @@
         else if (auto le = dynamic_cast<LvalExpression*>(e))
         {
             auto reg = st.requestRegister();
+
+            std::cout
+            << "\tlw " << *reg << ", " << le->getOffset() 
+                << "(" << *le->getRegister() << ")" << std::endl
+            << "\tla $a0, (" << *reg << ")" << std::endl;
+
             if (le->getType() == st.getPrimativeType("string"))
             {
-                std::cout
-                << "\tlw " << *reg << ", " << le->getOffset() 
-                    << "(" << *le->getRegister() << ")" << std::endl
-                << "\tla $a0, (" << *reg << ")" << std::endl
-                << "\tli $v0, 4" << std::endl
-                << "\tsyscall" << std::endl;
+                std::cout << "\tli $v0, 4" << std::endl;
             }
             else if (le->getType() == st.getPrimativeType("char"))
             {
-                std::cout
-                << "\tlw " << *reg << ", " << le->getOffset() 
-                    << "(" << *le->getRegister() << ")" << std::endl
-                << "\tla $a0, (" << *reg << ")" << std::endl
-                << "\tli $v0, 11" << std::endl
-                << "\tsyscall" << std::endl;
+                std::cout << "\tli $v0, 11" << std::endl;
             }
             else if (le->getType() == st.getPrimativeType("integer")
                   || le->getType() == st.getPrimativeType("boolean"))
             {
-                std::cout
-                << "\tlw " << *reg << ", " << le->getOffset() 
-                    << "(" << *le->getRegister() << ")" << std::endl
-                << "\tla $a0, (" << *reg << ")" << std::endl
-                << "\tli $v0, 1" << std::endl
-                << "\tsyscall" << std::endl;
+                std::cout << "\tli $v0, 1" << std::endl;
             }
             else
             {
                 throw std::logic_error("This type aint defined!");
             }
+            std::cout << "\tsyscall" << std::endl;
+
         }
         else if (auto re = dynamic_cast<RegisterExpression*>(e))
         {
+            std::cout << "\tla $a0, " << *re->getRegister() << std::endl;
+
             if (re->getType() == st.getPrimativeType("string"))
             {
-                std::cout
-                << "\tla $a0, " << *re->getRegister() << std::endl
-                << "\tli $v0, 4" << std::endl
-                << "\tsyscall" << std::endl;
+                std::cout << "\tli $v0, 4" << std::endl;
             }
             else if (re->getType() == st.getPrimativeType("char"))
             {
-                std::cout
-                << "\tla $a0, " << *re->getRegister() << std::endl
-                << "\tli $v0, 11" << std::endl
-                << "\tsyscall" << std::endl;
+                std::cout << "\tli $v0, 11" << std::endl;
             }
             else if (re->getType() == st.getPrimativeType("integer")
                   || re->getType() == st.getPrimativeType("boolean"))
             {
-                std::cout
-                << "\tla $a0, " << *re->getRegister() << std::endl
-                << "\tli $v0, 1" << std::endl
-                << "\tsyscall" << std::endl;
+                std::cout << "\tli $v0, 1" << std::endl;
             }
             else
             {
                 throw std::logic_error("This type aint defined!");
             }
+            std::cout << "\tsyscall" << std::endl;
 
         }
         else
