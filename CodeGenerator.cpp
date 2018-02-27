@@ -1,70 +1,102 @@
 #include <iostream>
 
 #include "CodeGenerator.hpp"
-#include "Value.hpp"
+#include "FoldExpression.hpp"
+#include "RegisterExpression.hpp"
 
-    Value CodeGenerator::charLiteral(char c)
+    int CodeGenerator::charLiteral(char c)
     {
-        Value val;
-        val.value = c;
-        val.type = st.getPrimativeType("char");
-        return val;
+        FoldExpression *fe = new FoldExpression();
+        fe->setType(st.getPrimativeType("char"));
+        fe->setValue(c);
+        expressions.push_back(fe);
+        return expressions.size() - 1;
     }
 
-    void CodeGenerator::assertIntOrChar(Value v)
+    void CodeGenerator::assertIntOrChar(int i)
     {
+        auto e = expressions[i];
         auto charType = st.getPrimativeType("char");
         auto intType = st.getPrimativeType("integer");
-        if (v.type != charType && v.type != intType)
+        if (e->getType() != charType && e->getType() != intType)
         {
                 throw std::runtime_error("invalid conversion");
         }
     }
 
-    Value CodeGenerator::charCast(Value v)
+    int CodeGenerator::charCast(int i)
     {
-        assertIntOrChar(v);
-        v.type = st.getPrimativeType("char");
-        return v;
+        assertIntOrChar(i);
+        auto e = expressions[i];
+        e->setType(st.getPrimativeType("char"));
+        return i;
     }
 
-    Value CodeGenerator::intLiteral(int i)
+    int CodeGenerator::intLiteral(int i)
     {
-        Value val;
-        val.value = i;
-        val.type = st.getPrimativeType("integer");
-        return val;
+        FoldExpression *fe = new FoldExpression();
+        fe->setValue(i);
+        fe->setType(st.getPrimativeType("integer"));
+        expressions.push_back(fe);
+        return expressions.size() - 1;
     }
 
-    Value CodeGenerator::intCast(Value v)
+    int CodeGenerator::intCast(int i)
     {
-        assertIntOrChar(v);
-        v.type = st.getPrimativeType("char");
-        return v; 
+        assertIntOrChar(i);
+        auto e = expressions[i];
+        e->setType(st.getPrimativeType("integer"));
+        return i; 
     }
 
     int CodeGenerator::stringLiteral(char* cstr)
     {
-        Value val;
-        val.value = st.storeStringLiteral(cstr);
-        val.type = st.getPrimativeType("string");
-        values.push_back(val);
-        return values.size() -1;
+        FoldExpression *fe = new FoldExpression();
+        fe->setType(st.getPrimativeType("string"));
+        fe->setValue(st.storeStringLiteral(cstr));
+        expressions.push_back(fe);
+        return expressions.size() - 1;
     }
-    void CodeGenerator::writeExpression()
+    void CodeGenerator::writeExpression(int i)
     {
-        auto val = values.end() -1;
-        values.erase(val);
-        if (val->type == st.getPrimativeType("string"))
+        auto e = expressions[i];
+        if(auto fe = dynamic_cast<FoldExpression*>(e))
         {
-            std::cout
-            << "\tla $a0, STR" << val->value << std::endl
-            << "\tli $v0, 4" << std::endl
-            << "\tsyscall" << std::endl;
+            if (fe->getType() == st.getPrimativeType("string"))
+            {
+                std::cout
+                << "\tla $a0, STR" << fe->getValue() << std::endl
+                << "\tli $v0, 4" << std::endl
+                << "\tsyscall" << std::endl;
+            }
+            else if (fe->getType() == st.getPrimativeType("char"))
+            {
+                std::cout
+                << "\tla $a0, " << fe->getValue() << std::endl
+                << "\tli $v0, 11" << std::endl
+                << "\tsyscall" << std::endl;
+            }
+            else if (fe->getType() == st.getPrimativeType("integer")
+                  || fe->getType() == st.getPrimativeType("boolean"))
+            {
+                std::cout
+                << "\tla $a0, " << fe->getValue() << std::endl
+                << "\tli $v0, 1" << std::endl
+                << "\tsyscall" << std::endl;
+            }
+            else
+            {
+                throw std::logic_error("This type aint defined!");
+            }
+
+        }
+        else if (auto re = dynamic_cast<RegisterExpression*>(e))
+        {
+            //TODO work with register values.
         }
         else
         {
-            throw std::runtime_error("This type aint defined!");
+            throw std::logic_error("dynamic cast didn't work");
         }
     }
 
@@ -103,6 +135,42 @@
         << "\tli $v0, 17" << std::endl
         << "\tsyscall" << std::endl
         << std::endl;
+    }
+
+    int CodeGenerator::storeType(char* id, int i)
+    {
+        auto type = st.getPrimativeType(i);
+        st.storeType(id, type);
+    }
+
+    int CodeGenerator::lookupType(char* c)
+    {
+        return st.lookupType(c);
+    }
+
+    void CodeGenerator::clearExpressions()
+    {
+        for (auto & e : expressions)
+        {
+            delete e;
+            e = nullptr;
+        }
+        expressions.clear();
+    }
+
+    void CodeGenerator::appendStrList(char* c)
+    {
+        tempStrList.push_back(c);
+    }
+
+    void CodeGenerator::makeVars(int i, std::string reg)
+    {
+        auto type = st.getPrimativeType(i);
+        for (const auto & name : tempStrList)
+        {
+            st.storeVar(name, type, reg);
+        }
+        tempStrList.clear();
     }
 
    /*

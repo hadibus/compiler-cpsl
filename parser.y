@@ -198,15 +198,15 @@ TypeDecls    : TypeDecls TypeDecl
              | TypeDecl
              ;
 
-TypeDecl : IDENTSY EQSY Type SCOLONSY {}
+TypeDecl : IDENTSY EQSY Type SCOLONSY {code_gen.storeType($1, $3);}
          ;
 
-Type : SimpleType {}
+Type : SimpleType {$$ = $1;}
      | RecordType {}
      | ArrayType {}
      ;
 
-SimpleType : IDENTSY {}
+SimpleType : IDENTSY {$$ = code_gen.lookupType(yylval.str_val);}
            ;
 
 RecordType : RECORDSY FieldDecls ENDSY {}
@@ -219,8 +219,8 @@ FieldDecls : FieldDecls FieldDecl {}
 FieldDecl : IdentList COLONSY Type SCOLONSY {}
           ;
 
-IdentList : IdentList COMMASY IDENTSY {}
-          | IDENTSY {}
+IdentList : IdentList COMMASY IDENTSY {code_gen.appendStrList(yylval.str_val);}
+          | IDENTSY {code_gen.appendStrList(yylval.str_val);}
           ;
 
 ArrayType : ARRAYSY LBRACKETSY Expression COLONSY Expression RBRACKETSY OFSY Type {}
@@ -234,7 +234,7 @@ VarDecls    : VarDecls VarDecl
             | VarDecl
             ;
 
-VarDecl : IdentList COLONSY Type SCOLONSY {}
+VarDecl : IdentList COLONSY Type SCOLONSY {code_gen.makeVars($3);}
         ;
 
 Statement : Assignment {}
@@ -307,11 +307,11 @@ ReadArgs : ReadArgs COMMASY LValue {}
          | LValue                  {}
          ;
 
-WriteStatement : WRITESY LPARENSY WriteArgs RPARENSY {}
+WriteStatement : WRITESY LPARENSY WriteArgs RPARENSY {code_gen.clearExpressions();}
                ;
 
-WriteArgs : WriteArgs COMMASY Expression {code_gen.writeExpression();}
-          | Expression                   {code_gen.writeExpression();}
+WriteArgs : WriteArgs COMMASY Expression {code_gen.writeExpression($3);}
+          | Expression                   {code_gen.writeExpression($1);}
           ;
 
 ProcedureCall : IDENTSY LPARENSY OptArguments RPARENSY {}
@@ -323,8 +323,8 @@ Arguments : Arguments COMMASY Expression {}
           | Expression                   {}
           ;
 
-Expression : CHARCONSTSY                         {$$ = $1;}
-           | CHRSY LPARENSY Expression RPARENSY  {}
+Expression : CHARCONSTSY                         {$$ = code_gen.charLiteral(yylval.char_val);}
+           | CHRSY LPARENSY Expression RPARENSY  {$$ = code_gen.charCast($3);}
            | Expression ANDSY Expression         {}
            | Expression DIVSY Expression         {}
            | Expression EQSY Expression          {}
@@ -344,9 +344,9 @@ Expression : CHARCONSTSY                         {$$ = $1;}
            | LValue                              {}
            | MINUSSY Expression %prec UMINUSSY   {}
            | NOTSY Expression                    {}
-           | ORDSY LPARENSY Expression RPARENSY  {}
+           | ORDSY LPARENSY Expression RPARENSY  {$$ = code_gen.intCast($3);}
            | PREDSY LPARENSY Expression RPARENSY {}
-           | STRINGSY                            {code_gen.stringLiteral(yylval.str_val);}
+           | STRINGSY                            {$$ = code_gen.stringLiteral(yylval.str_val);}
            | SUCCSY LPARENSY Expression RPARENSY {}
            ;
 

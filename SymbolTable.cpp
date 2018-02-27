@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include <algorithm>
+#include <iostream>
 
 #include "SymbolTable.hpp"
 
@@ -54,7 +55,26 @@ Variable SymbolTable::lookupVar(std::string id)
     return {};
 }
 
-Type * SymbolTable::lookupType(std::string id)
+int SymbolTable::lookupType(std::string id)
+{
+    for (auto curLayer = stack.rbegin(); curLayer != stack.rend(); curLayer++)
+    {
+        auto found = curLayer->types.find(id);
+        if(found != curLayer->types.end())
+        {
+            for (auto idx = 0U; idx < primativeTypes.size(); idx++)
+            {
+                if (&primativeTypes[idx] == found->second)
+                {
+                    return idx;
+                }
+            }
+        }
+    }
+    throw std::runtime_error("Type " + id + " not defined");
+}
+
+Type * SymbolTable::getType(std::string id)
 {
     for (auto curLayer = stack.rbegin(); curLayer != stack.rend(); curLayer++)
     {
@@ -64,12 +84,11 @@ Type * SymbolTable::lookupType(std::string id)
             return found->second;
         }
     }
-    return {};
+    throw std::runtime_error("Type " + id + " not defined");
 }
 
 void SymbolTable::storeType(std::string id, Type* t)
 {
-    checkForIdDefined(id);
     auto topLayer = stack.rbegin();
     topLayer->types[id] = t;
 }
@@ -84,7 +103,7 @@ void SymbolTable::storeConst(std::string id, Type* t, int val)
     topLayer->constants[id] = c;
 }
 
-void SymbolTable::storeVar(std::string id, Type* t, int, std::string reg)
+void SymbolTable::storeVar(std::string id, Type* t, std::string reg)
 {
     checkForIdDefined(id);
     auto topLayer = stack.rbegin();
@@ -134,6 +153,11 @@ Type* SymbolTable::getPrimativeType(std::string s)
         throw std::domain_error("Primative type " + s + " not found");
     }
     return &(*found);
+}
+
+Type* SymbolTable::getPrimativeType(int i)
+{
+    return &primativeTypes[i];
 }
 
 std::vector<std::string> SymbolTable::getStringList()

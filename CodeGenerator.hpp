@@ -1,16 +1,17 @@
 #ifndef CODE_GENERATOR_HPP
 #define CODE_GENERATOR_HPP
 
+#include <memory>
 #include <string>
 
 #include "SymbolTable.hpp"
-#include "Value.hpp"
+#include "Expression.hpp"
 
 class CodeGenerator
 {
 public:
 
-    CodeGenerator() : st()
+    CodeGenerator() : st(), expressions(), tempStrList()
     {
         st.initialize();
         printHeader();
@@ -21,34 +22,40 @@ public:
         printFooter();
     }
 
-    void assertIntOrChar(Value);
-
-    
-    Value charLiteral(char);
-    Value charCast(Value);
-    Value intLiteral(int);
-    Value intCast(Value);
+    void assertIntOrChar(int);
+    void appendStrList(char*);
+    void makeVars(int, std::string reg = "&gp");
+    int getLVal(std::string);
+    void clearExpressions();
+    int charLiteral(char);
+    int charCast(int);
+    int intLiteral(int);
+    int intCast(int);
     int stringLiteral(char*);
-    Value getLValue(char*);
-    Value binOpAdd(Value, Value);
-    Value binOpAnd(Value, Value);
-    Value binOpDiv(Value, Value);
-    Value binOpEq(Value, Value);
-    Value binOpGteq(Value, Value);
-    Value binOpGt(Value, Value);
-    Value binOpLteq(Value, Value);
-    Value binOpLt(Value, Value);
-    Value binOpMod(Value, Value);
-    Value binOpMult(Value, Value);
-    Value binOpNeq(Value, Value);
-    Value binOpOr(Value, Value);
+    int getLint(char*);
+    int binOpAdd(int, int);
+    int binOpAnd(int, int);
+    int binOpDiv(int, int);
+    int binOpEq(int, int);
+    int binOpGteq(int, int);
+    int binOpGt(int, int);
+    int binOpLteq(int, int);
+    int binOpLt(int, int);
+    int binOpMod(int, int);
+    int binOpMult(int, int);
+    int binOpNeq(int, int);
+    int binOpOr(int, int);
 
-    Value binOpSub(Value, Value);
+    int binOpSub(int, int);
+
+    int storeType(char*, int);
+
+    int lookupType(char*);
 
     void printHeader();
     void printFooter();
 
-    void writeExpression();
+    void writeExpression(int i);
 
     void doStop();
 
@@ -61,7 +68,8 @@ public:
 
 private:
     SymbolTable st;
-    std::vector<Value> values;
+    std::vector<Expression*> expressions;
+    std::vector<std::string> tempStrList;
 
 };
 
