@@ -19,7 +19,7 @@ struct SymbolTableLayer
 class SymbolTable
 { 
 public:
-    SymbolTable(): stack(), primativeTypes(), offset(0U), regPool(0U){};
+    SymbolTable(): toWriteList(), stack(), primativeTypes(), offset(0U), regPool(0U){};
     void initialize();
     Constant lookupConst(std::string);
     Variable lookupVar(std::string);
@@ -34,6 +34,7 @@ public:
     Type* getPrimativeType(std::string);
     std::vector<std::string> getStringList();
 private:
+    std::vector<Type> toWriteList;
     std::vector<SymbolTableLayer> stack;
     std::vector<Type> primativeTypes;
     std::vector<std::string> stringList;

@@ -1,12 +1,12 @@
 %{
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
 
-#include "SymbolTable.hpp"
-
+#include "CodeGenerator.hpp"
 extern int yylex();
 void yyerror(const char*);
-SymbolTable symbol_table;
+CodeGenerator code_gen;
 %}
 
 %union
@@ -310,8 +310,8 @@ ReadArgs : ReadArgs COMMASY LValue {}
 WriteStatement : WRITESY LPARENSY WriteArgs RPARENSY {}
                ;
 
-WriteArgs : WriteArgs COMMASY Expression {}
-          | Expression                   {}
+WriteArgs : WriteArgs COMMASY Expression {code_gen.writeExpression();}
+          | Expression                   {code_gen.writeExpression();}
           ;
 
 ProcedureCall : IDENTSY LPARENSY OptArguments RPARENSY {}
@@ -346,7 +346,7 @@ Expression : CHARCONSTSY                         {$$ = $1;}
            | NOTSY Expression                    {}
            | ORDSY LPARENSY Expression RPARENSY  {}
            | PREDSY LPARENSY Expression RPARENSY {}
-           | STRINGSY                            {}
+           | STRINGSY                            {code_gen.stringLiteral(yylval.str_val);}
            | SUCCSY LPARENSY Expression RPARENSY {}
            ;
 
@@ -361,5 +361,6 @@ LValue : LValue DOTSY IDENTSY {}
 
 void yyerror(const char* msg)
 {
-  std::cerr << msg;
+  std::cerr << msg << std::endl;
+  exit(1);
 }

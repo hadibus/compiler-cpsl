@@ -28,7 +28,7 @@ public:
     Value charCast(Value);
     Value intLiteral(int);
     Value intCast(Value);
-    Value stringLiteral(char*);
+    int stringLiteral(char*);
     Value getLValue(char*);
     Value binOpAdd(Value, Value);
     Value binOpAnd(Value, Value);
@@ -48,6 +48,10 @@ public:
     void printHeader();
     void printFooter();
 
+    void writeExpression();
+
+    void doStop();
+
     
 
     int unOpNeg(int);
@@ -57,6 +61,7 @@ public:
 
 private:
     SymbolTable st;
+    std::vector<Value> values;
 
 };
 
