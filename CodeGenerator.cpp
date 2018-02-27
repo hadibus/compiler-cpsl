@@ -173,6 +173,27 @@
         tempStrList.clear();
     }
 
+    int CodeGenerator::getLVal(std::string lval)
+    {
+        auto c = st.lookupConst(lval);
+        auto v = st.lookupVar(lval);
+        if (c.type == nullptr && v.reg == "")
+        {
+            throw std::runtime_error("lval " + lval + " is not defined");
+        }
+        else if (c.type != nullptr)
+        {
+            //TODO - constants
+        }
+        else if (v.reg != "")
+        {
+            
+        }
+
+
+
+    }
+
    /*
     int CodeGenerator::binOpAdd(int, int);
     int CodeGenerator::binOpAnd(int, int);
