@@ -300,11 +300,11 @@ ReturnStatement : RETURNSY Expression {}
                 ;
 
 
-ReadStatement : READSY LPARENSY ReadArgs RPARENSY {}
+ReadStatement : READSY LPARENSY ReadArgs RPARENSY {code_gen.clearExpressions();}
               ;
 
-ReadArgs : ReadArgs COMMASY LValue {}
-         | LValue                  {}
+ReadArgs : ReadArgs COMMASY LValue {code_gen.readToLval($3);}
+         | LValue                  {code_gen.readToLval($1);}
          ;
 
 WriteStatement : WRITESY LPARENSY WriteArgs RPARENSY {code_gen.clearExpressions();}

@@ -19,7 +19,7 @@ struct SymbolTableLayer
 class SymbolTable
 { 
 public:
-    SymbolTable(): declTypes(), stack(), primativeTypes(), regPool(), offset(0U){};
+    SymbolTable(): declTypes(), stack(), primativeTypes(), stringList(), regPool(), offset(0U), varStrCount(0U){};
     void initialize();
     Constant lookupConst(std::string);
     Variable lookupVar(std::string);
@@ -36,6 +36,7 @@ public:
     Type* getPrimativeType(std::string);
     Type* getPrimativeType(int);
     std::vector<std::string> getStringList();
+    unsigned getVarStrCount(){return varStrCount;}
 private:
     std::vector<Type *> declTypes;
     std::vector<SymbolTableLayer> stack;
@@ -43,5 +44,6 @@ private:
     std::vector<std::string> stringList;
     std::vector<std::shared_ptr<std::string>> regPool;
     unsigned offset;
+    unsigned varStrCount;
 };
 #endif

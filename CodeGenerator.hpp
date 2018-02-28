@@ -11,7 +11,7 @@ class CodeGenerator
 {
 public:
 
-    CodeGenerator() : st(), expressions(), tempStrList()
+    CodeGenerator() : st(), expressions(), tempStrList(), tempExprIdxs()
     {
         st.initialize();
         printHeader();
@@ -56,7 +56,8 @@ public:
     void printHeader();
     void printFooter();
 
-    void writeExpression(int i);
+    void writeExpression(int);
+    void readToLval(int);
 
     void doStop();
 
@@ -71,6 +72,7 @@ private:
     SymbolTable st;
     std::vector<Expression*> expressions;
     std::vector<std::string> tempStrList;
+    std::vector<int> tempExprIdxs;
 
 };
 

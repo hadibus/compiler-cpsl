@@ -4,6 +4,8 @@
 #include "FoldExpression.hpp"
 #include "LvalExpression.hpp"
 
+const unsigned STRING_VAR_SIZE = 64;
+
     int CodeGenerator::charLiteral(char c)
     {
         FoldExpression *fe = new FoldExpression();
@@ -93,7 +95,6 @@
         else if (auto le = dynamic_cast<LvalExpression*>(e))
         {
             auto reg = st.requestRegister();
-
             std::cout
             << "\tlw " << *reg << ", " << le->getOffset() 
                 << "(" << *le->getRegister() << ")" << std::endl
@@ -174,6 +175,11 @@
         {
             std::cout << "STR" << i << ": " << sl[i] << std::endl;
         }
+        auto vsc = st.getVarStrCount();
+        for (auto i = 0U; i < vsc; i++)
+        {
+            std::cout << "VAR_STR" << i << ": .space " << STRING_VAR_SIZE << std::endl;
+        }
         std::cout << "GA:" << std::endl;
     }
 
@@ -232,13 +238,18 @@
         }
         else if (c.type != nullptr)
         {
-            //TODO - constants
+            FoldExpression *fe = new FoldExpression();
+            fe->setValue(c.value);
+            fe->setType(c.type);
+            expressions.push_back(fe);
+            return expressions.size() - 1;
         }
         else if (v.reg != "")
         {
             LvalExpression *le = new LvalExpression();
             le->setRegister(std::make_shared<std::string>(v.reg));
             le->setOffset(v.offset);
+            std::cerr << "getLval " << le->getOffset() << std::endl;
             le->setType(v.type);
             expressions.push_back(le);
             return expressions.size() - 1;
@@ -252,7 +263,6 @@
 
     int CodeGenerator::assignExprToLval(int li, int ei)
     {
-        std::cerr << li << std::endl;
         auto lvale = dynamic_cast<LvalExpression*>(expressions[li]);
         auto expr = expressions[ei];
 
@@ -287,6 +297,48 @@
 
         return ei;
 
+    }
+
+    void CodeGenerator::readToLval(int i)
+    {
+        auto le = dynamic_cast<LvalExpression*>(expressions[i]);
+        if (!le)
+        {
+            throw std::logic_error("lval not modifiable");
+        }
+
+        /*
+        read int 5
+        read string 8
+        read character 12
+        */
+        if (le->getType() == st.getPrimativeType("integer")
+         || le->getType() == st.getPrimativeType("boolean"))
+        {
+            std::cout << "\tli $v0, 5" << std::endl
+            << "\tsyscall" << std::endl
+            << "\tsw $v0, " << le->getOffset() << "(" << *le->getRegister() << ")" 
+            << std::endl;
+
+        }
+        else if (le->getType() == st.getPrimativeType("char"))
+        {
+            std::cout << "\tli $v0, 12" << std::endl
+            << "\tsyscall" << std::endl
+            << "\tsw $v0, " << le->getOffset() << "(" << *le->getRegister() << ")" 
+            << std::endl;
+        }
+        else if (le->getType() == st.getPrimativeType("string"))
+        {
+            std::cout
+            << "\tla $a0, VAR_STR" << le->getOffset() << std::endl
+            << "\tli $a1, " << STRING_VAR_SIZE << std::endl
+            << "\tli $v0, 8" << std::endl;
+        }
+        else
+        {
+            throw std::logic_error("In read, value type is bad");
+        }
     }
 
    /*

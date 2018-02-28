@@ -120,11 +120,20 @@ void SymbolTable::storeVar(std::string id, Type* t, std::string reg)
     checkForIdDefined(id);
     auto topLayer = stack.rbegin();
     Variable v;
-    v.offset = offset;
-    offset += 4;
+    if (t == getPrimativeType("string"))
+    { // string gets special treatment. space to be made in footer
+        v.offset = varStrCount;
+        varStrCount++;
+    }
+    else
+    {
+        v.offset = offset;
+        offset += 4;
+    }
     v.reg = reg;
     v.type = t;
     topLayer->variables[id] = v;
+    std::cerr << topLayer->variables[id].offset << std::endl;
 }
 
 int SymbolTable::storeStringLiteral(std::string s)
