@@ -249,7 +249,6 @@ const unsigned STRING_VAR_SIZE = 64;
             LvalExpression *le = new LvalExpression();
             le->setRegister(std::make_shared<std::string>(v.reg));
             le->setOffset(v.offset);
-            std::cerr << "getLval " << le->getOffset() << std::endl;
             le->setType(v.type);
             expressions.push_back(le);
             return expressions.size() - 1;
@@ -339,6 +338,18 @@ const unsigned STRING_VAR_SIZE = 64;
         {
             throw std::logic_error("In read, value type is bad");
         }
+    }
+
+    void CodeGenerator::storeConst(char* id, int i)
+    {
+        auto fe = dynamic_cast<FoldExpression*>(expressions[i]);
+        if(!fe)
+        {
+            throw std::logic_error("error in const decls");
+        }
+        auto t = st.getPrimativeType(i);
+        auto val = fe->getValue();
+        st.storeConst(id, t, val);
     }
 
    /*

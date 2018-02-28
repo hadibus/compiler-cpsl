@@ -141,7 +141,7 @@ ConstDecls : ConstDecls ConstDecl
 	   | ConstDecl
            ;
 
-ConstDecl : IDENTSY EQSY Expression SCOLONSY {}
+ConstDecl : IDENTSY EQSY Expression SCOLONSY {code_gen.storeConst($1,$3);}
 	  ;
 
 PFDecls : PFDecls ProcedureDecl

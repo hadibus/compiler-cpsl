@@ -60,7 +60,7 @@ public:
     void readToLval(int);
 
     void doStop();
-
+    void storeConst(char*, int);
     
 
     int unOpNeg(int);
