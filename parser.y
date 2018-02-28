@@ -337,7 +337,7 @@ Expression : CHARCONSTSY                         {$$ = code_gen.charLiteral(yylv
            | Expression MULTSY Expression        {}
            | Expression NEQSY Expression         {}
            | Expression ORSY Expression          {}
-           | Expression PLUSSY Expression        {}
+           | Expression PLUSSY Expression        {$$ = code_gen.binOpAdd($1,$3);}
            | FunctionCall                        {}
            | INTSY                               {$$ = code_gen.intLiteral($1);}
            | LPARENSY Expression RPARENSY        {}

@@ -361,8 +361,132 @@ const unsigned STRING_VAR_SIZE = 64;
         st.storeConst(id, t, val);
     }
 
+    int CodeGenerator::binOpAdd(int l, int r)
+    {
+        if (expressions[l]->getType() != expressions[r]->getType())
+        {
+            throw std::runtime_error("operation on distinct types is prohibited");
+        }
+
+        if(auto le = dynamic_cast<FoldExpression*>(expressions[l]))
+        {
+
+            if(auto re = dynamic_cast<FoldExpression*>(expressions[r]))
+            {
+                le->setValue(le->getValue() + re->getValue());
+                return l;
+            }
+            else
+            if(auto re = dynamic_cast<LvalExpression*>(expressions[r]))
+            {
+                auto reg = st.requestRegister();
+
+                std::cout
+                << "\tlw " << *reg << ", " << re->getOffset() << "(" << *re->getRegister() << ")" << std::endl
+                << "\taddi " << *reg << ", " << *reg << ", " << le->getValue() << std::endl;
+                
+                auto regExpr = new RegisterExpression();
+                regExpr->setRegister(reg);
+                regExpr->setType(le->getType());
+                expressions.push_back(regExpr);
+                return expressions.size() - 1;
+            }
+            else
+            if(auto re = dynamic_cast<RegisterExpression*>(expressions[r]))
+            {
+                std::cout
+                << "\taddi " << *re->getRegister() << ", " << *re->getRegister() << ", " << le->getValue()
+                << std::endl;
+                return r;
+            }
+        }
+        else
+        if(auto le = dynamic_cast<LvalExpression*>(expressions[l]))
+        {
+
+            if(auto re = dynamic_cast<FoldExpression*>(expressions[r]))
+            {
+                auto reg = st.requestRegister();
+
+                std::cout
+                << "\tlw " << *reg << ", " << le->getOffset() << "(" << *le->getRegister() << ")" << std::endl
+                << "\taddi " << *reg << ", " << *reg << ", " << re->getValue() << std::endl;
+                
+                auto regExpr = new RegisterExpression();
+                regExpr->setRegister(reg);
+                regExpr->setType(re->getType());
+                expressions.push_back(regExpr);
+                return expressions.size() - 1;
+            }
+            else
+            if(auto re = dynamic_cast<LvalExpression*>(expressions[r]))
+            {
+                auto reg = st.requestRegister();
+                auto regTemp = st.requestRegister();
+
+                std::cout
+                << "\tlw " << *reg << ", " << le->getOffset() << "(" << *le->getRegister() << ")" << std::endl
+                << "\tlw " << *regTemp << ", " << re->getOffset() << "(" << *re->getRegister() << ")" << std::endl
+                << "\tadd " << *reg << ", " << *reg << ", " << *regTemp << std::endl;
+                
+                auto regExpr = new RegisterExpression();
+                regExpr->setRegister(reg);
+                regExpr->setType(re->getType());
+                expressions.push_back(regExpr);
+                return expressions.size() - 1;
+            }
+            else
+            if(auto re = dynamic_cast<RegisterExpression*>(expressions[r]))
+            {
+                auto tempReg = st.requestRegister();
+
+                std::cout
+                << "\tlw " << *tempReg << ", " << le->getOffset() << "(" << *le->getRegister() << ")" << std::endl
+                << "\tadd " << *re->getRegister() << ", " << *re->getRegister() << ", " << *tempReg << std::endl;
+
+                return r;
+            }
+        }
+        else
+        if(auto le = dynamic_cast<RegisterExpression*>(expressions[l]))
+        {
+
+            if(auto re = dynamic_cast<FoldExpression*>(expressions[r]))
+            {
+                std::cout
+                << "\taddi " << *le->getRegister() << ", " << *le->getRegister() << ", " << re->getValue()
+                << std::endl;
+                return l;
+            }
+            else
+            if(auto re = dynamic_cast<LvalExpression*>(expressions[r]))
+            {
+                auto tempReg = st.requestRegister();
+
+                std::cout
+                << "\tlw " << *tempReg << ", " << re->getOffset() << "(" << *re->getRegister() << ")" << std::endl
+                << "\tadd " << *le->getRegister() << ", " << *le->getRegister() << ", " << *tempReg << std::endl;
+
+                return l;
+            }
+            else
+            if(auto re = dynamic_cast<RegisterExpression*>(expressions[r]))
+            {
+                std::cout
+                << "\tadd " << *le->getRegister() << ", " << *le->getRegister() << ", " << *re->getRegister()
+                << std::endl;
+
+                re->releaseRegister();
+                return l;
+            }
+        }
+        else
+        {
+            throw std::logic_error("operation failure");
+        }
+        
+    }
    /*
-    int CodeGenerator::binOpAdd(int, int);
     int CodeGenerator::binOpAnd(int, int);
     int CodeGenerator::binOpDiv(int, int);
     int CodeGenerator::binOpEq(int, int);
