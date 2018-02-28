@@ -347,7 +347,7 @@ const unsigned STRING_VAR_SIZE = 64;
         {
             throw std::logic_error("error in const decls");
         }
-        auto t = st.getPrimativeType(i);
+        auto t = fe->getType();
         auto val = fe->getValue();
         st.storeConst(id, t, val);
     }

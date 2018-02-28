@@ -133,7 +133,6 @@ void SymbolTable::storeVar(std::string id, Type* t, std::string reg)
     v.reg = reg;
     v.type = t;
     topLayer->variables[id] = v;
-    std::cerr << topLayer->variables[id].offset << std::endl;
 }
 
 int SymbolTable::storeStringLiteral(std::string s)

@@ -346,7 +346,7 @@ Expression : CHARCONSTSY                         {$$ = code_gen.charLiteral(yylv
            | NOTSY Expression                    {}
            | ORDSY LPARENSY Expression RPARENSY  {$$ = code_gen.intCast($3);}
            | PREDSY LPARENSY Expression RPARENSY {}
-           | STRINGSY                            {$$ = code_gen.stringLiteral(yylval.str_val);}
+           | STRINGSY                            {$$ = code_gen.stringLiteral($1);}
            | SUCCSY LPARENSY Expression RPARENSY {}
            ;
 
