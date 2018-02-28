@@ -149,9 +149,9 @@ void SymbolTable::checkForIdDefined(std::string id)
     {
         throw std::runtime_error("Constant " + id + " is already defined in this scope");
     }
-    if(topLayer->types.find(id) != topLayer->types.end())
+    if(topLayer->variables.find(id) != topLayer->variables.end())
     {
-        throw std::runtime_error("Type " + id + " is already defined in this scope");
+        throw std::runtime_error("Variable " + id + " is already defined in this scope");
     }
 }
 

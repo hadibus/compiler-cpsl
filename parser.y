@@ -325,18 +325,18 @@ Arguments : Arguments COMMASY Expression {}
 
 Expression : CHARCONSTSY                         {$$ = code_gen.charLiteral(yylval.char_val);}
            | CHRSY LPARENSY Expression RPARENSY  {$$ = code_gen.charCast($3);}
-           | Expression ANDSY Expression         {}
+           | Expression ANDSY Expression         {$$ = code_gen.binOpAnd($1,$3);}
            | Expression DIVSY Expression         {}
-           | Expression EQSY Expression          {}
-           | Expression GTESY Expression         {}
+           | Expression EQSY Expression          {$$ = code_gen.binOpEq($1,$3);}
+           | Expression GTESY Expression         {$$ = code_gen.binOpGteq($1,$3);}
            | Expression GTSY Expression          {}
            | Expression LTESY Expression         {}
            | Expression LTSY Expression          {}
            | Expression MINUSSY Expression       {}
            | Expression MODSY Expression         {}
            | Expression MULTSY Expression        {}
-           | Expression NEQSY Expression         {}
-           | Expression ORSY Expression          {}
+           | Expression NEQSY Expression         {$$ = code_gen.binOpNeq($1,$3);}
+           | Expression ORSY Expression          {$$ = code_gen.binOpOr($1,$3);}
            | Expression PLUSSY Expression        {$$ = code_gen.binOpAdd($1,$3);}
            | FunctionCall                        {}
            | INTSY                               {$$ = code_gen.intLiteral($1);}
