@@ -283,10 +283,19 @@ const unsigned STRING_VAR_SIZE = 64;
                 << "(" << *lvale->getRegister() << ")" << std::endl;
 
         }
+        else if (auto le = dynamic_cast<LvalExpression*>(expr))
+        {
+            auto reg = st.requestRegister();
+            std::cout
+            << "\tlw " << *reg << ", " << le->getOffset()
+                << "(" << *le->getRegister() << ")" << std::endl
+            << "\tsw " << *reg << ", " << lvale->getOffset()
+                << "(" << *lvale->getRegister() << ")" << std::endl;
+        }
         else if (auto re = dynamic_cast<RegisterExpression*>(expr))
         {
             std::cout
-            << "\tsw" << *re->getRegister() << ", " << lvale->getOffset() 
+            << "\tsw " << *re->getRegister() << ", " << lvale->getOffset() 
                 << "(" << *lvale->getRegister() << ")" << std::endl;
         }
         else
