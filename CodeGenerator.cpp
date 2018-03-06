@@ -122,7 +122,7 @@ const unsigned STRING_VAR_SIZE = 64;
         }
         else if (auto re = dynamic_cast<RegisterExpression*>(e))
         {
-            std::cout << "\tla $a0, " << *re->getRegister() << std::endl;
+            std::cout << "\tla $a0, (" << *re->getRegister() << ")" << std::endl;
 
             if (re->getType() == st.getPrimativeType("string"))
             {
@@ -523,7 +523,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 
                 auto regExpr = new RegisterExpression();
                 regExpr->setRegister(reg);
-                regExpr->setType(le->getType();
+                regExpr->setType(le->getType());
                 expressions.push_back(regExpr);
                 return expressions.size() - 1;
             }

@@ -326,28 +326,28 @@ Arguments : Arguments COMMASY Expression {}
 Expression : CHARCONSTSY                         {$$ = code_gen.charLiteral(yylval.char_val);}
            | CHRSY LPARENSY Expression RPARENSY  {$$ = code_gen.charCast($3);}
            | Expression ANDSY Expression         {$$ = code_gen.binOpAnd($1,$3);}
-           | Expression DIVSY Expression         {}
+           | Expression DIVSY Expression         {$$ = code_gen.binOpDiv($1,$3);}
            | Expression EQSY Expression          {$$ = code_gen.binOpEq($1,$3);}
            | Expression GTESY Expression         {$$ = code_gen.binOpGteq($1,$3);}
-           | Expression GTSY Expression          {}
+           | Expression GTSY Expression          {$$ = code_gen.binOpGt($1, $3);}
            | Expression LTESY Expression         {$$ = code_gen.binOpLteq($1,$3);}
-           | Expression LTSY Expression          {}
-           | Expression MINUSSY Expression       {}
-           | Expression MODSY Expression         {}
-           | Expression MULTSY Expression        {$$ = code_gen.binOpSub($1,$3);}
+           | Expression LTSY Expression          {$$ = code_gen.binOpLt($1,$3);}
+           | Expression MINUSSY Expression       {$$ = code_gen.binOpSub($1,$3);}
+           | Expression MODSY Expression         {$$ = code_gen.binOpMod($1,$3);}
+           | Expression MULTSY Expression        {$$ = code_gen.binOpMult($1,$3);}
            | Expression NEQSY Expression         {$$ = code_gen.binOpNeq($1,$3);}
            | Expression ORSY Expression          {$$ = code_gen.binOpOr($1,$3);}
            | Expression PLUSSY Expression        {$$ = code_gen.binOpAdd($1,$3);}
            | FunctionCall                        {}
            | INTSY                               {$$ = code_gen.intLiteral($1);}
-           | LPARENSY Expression RPARENSY        {}
+           | LPARENSY Expression RPARENSY        {$$ = $2;}
            | LValue                              {}
-           | MINUSSY Expression %prec UMINUSSY   {}
-           | NOTSY Expression                    {}
+           | MINUSSY Expression %prec UMINUSSY   {$$ = code_gen.unOpNeg($2);}
+           | NOTSY Expression                    {$$ = code_gen.unOpNot($2);}
            | ORDSY LPARENSY Expression RPARENSY  {$$ = code_gen.intCast($3);}
-           | PREDSY LPARENSY Expression RPARENSY {}
+           | PREDSY LPARENSY Expression RPARENSY {$$ = code_gen.unOpDecr($3);}
            | STRINGSY                            {$$ = code_gen.stringLiteral($1);}
-           | SUCCSY LPARENSY Expression RPARENSY {}
+           | SUCCSY LPARENSY Expression RPARENSY {$$ = code_gen.unOpIncr($3);}
            ;
 
 FunctionCall : IDENTSY LPARENSY OptArguments RPARENSY {}
