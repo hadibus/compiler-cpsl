@@ -335,7 +335,7 @@ Expression : CHARCONSTSY                         {$$ = cg.charLiteral(yylval.cha
            | Expression MINUSSY Expression       {$$ = cg.binOpSub($1,$3);}
            | Expression MODSY Expression         {$$ = cg.binOpMod($1,$3);}
            | Expression MULTSY Expression        {$$ = cg.binOpMult($1,$3);}
-           | Expression NEQSY Expression         {$$ = cg.binOpNeq($1,$3);}
+           | Expression NEQSY Expression         {$$ = cg.binOp($1,$3,&CodeGenerator::binOpNeq);}
            | Expression ORSY Expression          {$$ = cg.binOp($1,$3,&CodeGenerator::binOpOr);}
            | Expression PLUSSY Expression        {$$ = cg.binOp($1,$3,&CodeGenerator::binOpAdd);}
            | FunctionCall                        {}
