@@ -325,9 +325,9 @@ Arguments : Arguments COMMASY Expression {}
 
 Expression : CHARCONSTSY                         {$$ = cg.charLiteral(yylval.char_val);}
            | CHRSY LPARENSY Expression RPARENSY  {$$ = cg.charCast($3);}
-           | Expression ANDSY Expression         {$$ = cg.binOpAnd($1,$3);}
+           | Expression ANDSY Expression         {$$ = cg.binOp($1,$3,&CodeGenerator::binOpAnd);}
            | Expression DIVSY Expression         {$$ = cg.binOpDiv($1,$3);}
-           | Expression EQSY Expression          {$$ = cg.binOpEq($1,$3);}
+           | Expression EQSY Expression          {$$ = cg.binOp($1,$3,&CodeGenerator::binOpEq);}
            | Expression GTESY Expression         {$$ = cg.binOpGteq($1,$3);}
            | Expression GTSY Expression          {$$ = cg.binOpGt($1, $3);}
            | Expression LTESY Expression         {$$ = cg.binOpLteq($1,$3);}
@@ -336,7 +336,7 @@ Expression : CHARCONSTSY                         {$$ = cg.charLiteral(yylval.cha
            | Expression MODSY Expression         {$$ = cg.binOpMod($1,$3);}
            | Expression MULTSY Expression        {$$ = cg.binOpMult($1,$3);}
            | Expression NEQSY Expression         {$$ = cg.binOpNeq($1,$3);}
-           | Expression ORSY Expression          {$$ = cg.binOpOr($1,$3);}
+           | Expression ORSY Expression          {$$ = cg.binOp($1,$3,&CodeGenerator::binOpOr);}
            | Expression PLUSSY Expression        {$$ = cg.binOp($1,$3,&CodeGenerator::binOpAdd);}
            | FunctionCall                        {}
            | INTSY                               {$$ = cg.intLiteral($1);}
