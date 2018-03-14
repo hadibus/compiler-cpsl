@@ -35,7 +35,7 @@ public:
     int stringLiteral(char*);
     int getLint(char*);
     int loadReg(LvalExpression*);
-    int binOp(int, int, int (CodeGenerator::*)(int, int));
+    int binOp(int, int, int (CodeGenerator::*)(int, int), bool matchTypes = true);
     int binOpAdd(int, int);
     int binOpAnd(int, int);
     int binOpDiv(int, int);
