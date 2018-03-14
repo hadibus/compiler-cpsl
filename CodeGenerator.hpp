@@ -5,7 +5,7 @@
 #include <string>
 
 #include "SymbolTable.hpp"
-#include "Expression.hpp"
+#include "LvalExpression.hpp"
 
 class CodeGenerator
 {
@@ -34,6 +34,8 @@ public:
     int intCast(int);
     int stringLiteral(char*);
     int getLint(char*);
+    int loadReg(LvalExpression*);
+    int binOp(int, int, int (CodeGenerator::*)(int, int));
     int binOpAdd(int, int);
     int binOpAnd(int, int);
     int binOpDiv(int, int);
@@ -46,7 +48,6 @@ public:
     int binOpMult(int, int);
     int binOpNeq(int, int);
     int binOpOr(int, int);
-
     int binOpSub(int, int);
 
     int storeType(char*, int);

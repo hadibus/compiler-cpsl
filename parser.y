@@ -6,7 +6,7 @@
 #include "CodeGenerator.hpp"
 extern int yylex();
 void yyerror(const char*);
-CodeGenerator code_gen;
+CodeGenerator cg;
 %}
 
 %union
@@ -141,7 +141,7 @@ ConstDecls : ConstDecls ConstDecl
 	   | ConstDecl
            ;
 
-ConstDecl : IDENTSY EQSY Expression SCOLONSY {code_gen.storeConst($1,$3);}
+ConstDecl : IDENTSY EQSY Expression SCOLONSY {cg.storeConst($1,$3);}
 	  ;
 
 PFDecls : PFDecls ProcedureDecl
@@ -198,7 +198,7 @@ TypeDecls    : TypeDecls TypeDecl
              | TypeDecl
              ;
 
-TypeDecl : IDENTSY EQSY Type SCOLONSY {code_gen.storeType($1, $3);}
+TypeDecl : IDENTSY EQSY Type SCOLONSY {cg.storeType($1, $3);}
          ;
 
 Type : SimpleType {$$ = $1;}
@@ -206,7 +206,7 @@ Type : SimpleType {$$ = $1;}
      | ArrayType {}
      ;
 
-SimpleType : IDENTSY {$$ = code_gen.lookupType(yylval.str_val);}
+SimpleType : IDENTSY {$$ = cg.lookupType(yylval.str_val);}
            ;
 
 RecordType : RECORDSY FieldDecls ENDSY {}
@@ -219,8 +219,8 @@ FieldDecls : FieldDecls FieldDecl {}
 FieldDecl : IdentList COLONSY Type SCOLONSY {}
           ;
 
-IdentList : IdentList COMMASY IDENTSY {code_gen.appendStrList(yylval.str_val);}
-          | IDENTSY {code_gen.appendStrList(yylval.str_val);}
+IdentList : IdentList COMMASY IDENTSY {cg.appendStrList(yylval.str_val);}
+          | IDENTSY {cg.appendStrList(yylval.str_val);}
           ;
 
 ArrayType : ARRAYSY LBRACKETSY Expression COLONSY Expression RBRACKETSY OFSY Type {}
@@ -234,7 +234,7 @@ VarDecls    : VarDecls VarDecl
             | VarDecl
             ;
 
-VarDecl : IdentList COLONSY Type SCOLONSY {code_gen.makeVars($3);}
+VarDecl : IdentList COLONSY Type SCOLONSY {cg.makeVars($3);}
         ;
 
 Statement : Assignment {}
@@ -250,7 +250,7 @@ Statement : Assignment {}
           | {}
           ;
 
-Assignment : LValue ASSIGNSY Expression {code_gen.assignExprToLval($1, $3);}
+Assignment : LValue ASSIGNSY Expression {cg.assignExprToLval($1, $3);}
            ;
 
 IfStatement : IfHead ThenPart ElseIfList ElseClause ENDSY {}
@@ -292,7 +292,7 @@ ToHead : TOSY Expression {}
        | DOWNTOSY Expression {}
        ;
 
-StopStatement : STOPSY {code_gen.doStop();}
+StopStatement : STOPSY {cg.doStop();}
               ;
 
 ReturnStatement : RETURNSY Expression {}
@@ -300,18 +300,18 @@ ReturnStatement : RETURNSY Expression {}
                 ;
 
 
-ReadStatement : READSY LPARENSY ReadArgs RPARENSY {code_gen.clearExpressions();}
+ReadStatement : READSY LPARENSY ReadArgs RPARENSY {cg.clearExpressions();}
               ;
 
-ReadArgs : ReadArgs COMMASY LValue {code_gen.readToLval($3);}
-         | LValue                  {code_gen.readToLval($1);}
+ReadArgs : ReadArgs COMMASY LValue {cg.readToLval($3);}
+         | LValue                  {cg.readToLval($1);}
          ;
 
-WriteStatement : WRITESY LPARENSY WriteArgs RPARENSY {code_gen.clearExpressions();}
+WriteStatement : WRITESY LPARENSY WriteArgs RPARENSY {cg.clearExpressions();}
                ;
 
-WriteArgs : WriteArgs COMMASY Expression {code_gen.writeExpression($3);}
-          | Expression                   {code_gen.writeExpression($1);}
+WriteArgs : WriteArgs COMMASY Expression {cg.writeExpression($3);}
+          | Expression                   {cg.writeExpression($1);}
           ;
 
 ProcedureCall : IDENTSY LPARENSY OptArguments RPARENSY {}
@@ -323,31 +323,31 @@ Arguments : Arguments COMMASY Expression {}
           | Expression                   {}
           ;
 
-Expression : CHARCONSTSY                         {$$ = code_gen.charLiteral(yylval.char_val);}
-           | CHRSY LPARENSY Expression RPARENSY  {$$ = code_gen.charCast($3);}
-           | Expression ANDSY Expression         {$$ = code_gen.binOpAnd($1,$3);}
-           | Expression DIVSY Expression         {$$ = code_gen.binOpDiv($1,$3);}
-           | Expression EQSY Expression          {$$ = code_gen.binOpEq($1,$3);}
-           | Expression GTESY Expression         {$$ = code_gen.binOpGteq($1,$3);}
-           | Expression GTSY Expression          {$$ = code_gen.binOpGt($1, $3);}
-           | Expression LTESY Expression         {$$ = code_gen.binOpLteq($1,$3);}
-           | Expression LTSY Expression          {$$ = code_gen.binOpLt($1,$3);}
-           | Expression MINUSSY Expression       {$$ = code_gen.binOpSub($1,$3);}
-           | Expression MODSY Expression         {$$ = code_gen.binOpMod($1,$3);}
-           | Expression MULTSY Expression        {$$ = code_gen.binOpMult($1,$3);}
-           | Expression NEQSY Expression         {$$ = code_gen.binOpNeq($1,$3);}
-           | Expression ORSY Expression          {$$ = code_gen.binOpOr($1,$3);}
-           | Expression PLUSSY Expression        {$$ = code_gen.binOpAdd($1,$3);}
+Expression : CHARCONSTSY                         {$$ = cg.charLiteral(yylval.char_val);}
+           | CHRSY LPARENSY Expression RPARENSY  {$$ = cg.charCast($3);}
+           | Expression ANDSY Expression         {$$ = cg.binOpAnd($1,$3);}
+           | Expression DIVSY Expression         {$$ = cg.binOpDiv($1,$3);}
+           | Expression EQSY Expression          {$$ = cg.binOpEq($1,$3);}
+           | Expression GTESY Expression         {$$ = cg.binOpGteq($1,$3);}
+           | Expression GTSY Expression          {$$ = cg.binOpGt($1, $3);}
+           | Expression LTESY Expression         {$$ = cg.binOpLteq($1,$3);}
+           | Expression LTSY Expression          {$$ = cg.binOpLt($1,$3);}
+           | Expression MINUSSY Expression       {$$ = cg.binOpSub($1,$3);}
+           | Expression MODSY Expression         {$$ = cg.binOpMod($1,$3);}
+           | Expression MULTSY Expression        {$$ = cg.binOpMult($1,$3);}
+           | Expression NEQSY Expression         {$$ = cg.binOpNeq($1,$3);}
+           | Expression ORSY Expression          {$$ = cg.binOpOr($1,$3);}
+           | Expression PLUSSY Expression        {$$ = cg.binOp($1,$3,&CodeGenerator::binOpAdd);}
            | FunctionCall                        {}
-           | INTSY                               {$$ = code_gen.intLiteral($1);}
+           | INTSY                               {$$ = cg.intLiteral($1);}
            | LPARENSY Expression RPARENSY        {$$ = $2;}
            | LValue                              {}
-           | MINUSSY Expression %prec UMINUSSY   {$$ = code_gen.unOpNeg($2);}
-           | NOTSY Expression                    {$$ = code_gen.unOpNot($2);}
-           | ORDSY LPARENSY Expression RPARENSY  {$$ = code_gen.intCast($3);}
-           | PREDSY LPARENSY Expression RPARENSY {$$ = code_gen.unOpDecr($3);}
-           | STRINGSY                            {$$ = code_gen.stringLiteral($1);}
-           | SUCCSY LPARENSY Expression RPARENSY {$$ = code_gen.unOpIncr($3);}
+           | MINUSSY Expression %prec UMINUSSY   {$$ = cg.unOpNeg($2);}
+           | NOTSY Expression                    {$$ = cg.unOpNot($2);}
+           | ORDSY LPARENSY Expression RPARENSY  {$$ = cg.intCast($3);}
+           | PREDSY LPARENSY Expression RPARENSY {$$ = cg.unOpDecr($3);}
+           | STRINGSY                            {$$ = cg.stringLiteral($1);}
+           | SUCCSY LPARENSY Expression RPARENSY {$$ = cg.unOpIncr($3);}
            ;
 
 FunctionCall : IDENTSY LPARENSY OptArguments RPARENSY {}
@@ -355,7 +355,7 @@ FunctionCall : IDENTSY LPARENSY OptArguments RPARENSY {}
 
 LValue : LValue DOTSY IDENTSY {}
        | LValue LBRACKETSY Expression RBRACKETSY {}
-       | IDENTSY {$$ = code_gen.getLval($1);}
+       | IDENTSY {$$ = cg.getLval($1);}
        ;
 %%
 
