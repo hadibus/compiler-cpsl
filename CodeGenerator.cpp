@@ -221,6 +221,7 @@ const unsigned STRING_VAR_SIZE = 64;
 
     void CodeGenerator::makeVars(int i, std::string reg)
     {
+        //TODO: change the type system.
         auto type = st.getPrimativeType(i);
         for (const auto & name : tempStrList)
         {
@@ -260,6 +261,13 @@ const unsigned STRING_VAR_SIZE = 64;
         }
 
     }
+
+    /*
+    int CodeGenerator::getLvalArr(int lv, int ex)
+    {
+        
+    }
+    */
 
     int CodeGenerator::assignExprToLval(int li, int ei)
     {

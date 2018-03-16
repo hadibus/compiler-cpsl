@@ -69,6 +69,9 @@ public:
     int unOpDecr(int);
     int unOpIncr(int);
 
+
+    int getLvalArr(int,int);
+
 private:
     SymbolTable st;
     std::vector<Expression*> expressions;

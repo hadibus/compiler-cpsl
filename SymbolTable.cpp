@@ -2,29 +2,37 @@
 #include <algorithm>
 #include <iostream>
 
+#include "ArrayType.hpp"
+#include "BooleanType.hpp"
+#include "CharacterType.hpp"
+#include "IntegerType.hpp"
+#include "StringType.hpp"
 #include "SymbolTable.hpp"
+
+
+unsigned const INT_TYPE = 0, CHAR_TYPE = 1, BOOL_TYPE = 2, STR_TYPE = 3;
 
 void SymbolTable::initialize()
 {
-    primativeTypes.emplace_back("integer");
-    primativeTypes.emplace_back("char");
-    primativeTypes.emplace_back("boolean");
-    primativeTypes.emplace_back("string");
+    primitiveTypes.push_back(new IntegerType);
+    primitiveTypes.push_back(new CharacterType);
+    primitiveTypes.push_back(new BooleanType);
+    primitiveTypes.push_back(new StringType);
 
     enterScope();
-    storeType("integer", &primativeTypes[0]);
-    storeType("INTEGER", &primativeTypes[0]);
-    storeType("char", &primativeTypes[1]);
-    storeType("CHAR", &primativeTypes[1]);
-    storeType("boolean", &primativeTypes[2]);
-    storeType("BOOLEAN", &primativeTypes[2]);
-    storeType("string", &primativeTypes[3]);
-    storeType("STRING", &primativeTypes[3]);
+    storeType("integer", primitiveTypes[INT_TYPE]);
+    storeType("INTEGER", primitiveTypes[INT_TYPE]);
+    storeType("char", primitiveTypes[CHAR_TYPE]);
+    storeType("CHAR", primitiveTypes[CHAR_TYPE]);
+    storeType("boolean", primitiveTypes[BOOL_TYPE]);
+    storeType("BOOLEAN", primitiveTypes[BOOL_TYPE]);
+    storeType("string", primitiveTypes[STR_TYPE]);
+    storeType("STRING", primitiveTypes[STR_TYPE]);
 
-    storeConst("true", &primativeTypes[2], 1);
-    storeConst("TRUE", &primativeTypes[2], 1);
-    storeConst("false", &primativeTypes[2], 0);
-    storeConst("FALSE", &primativeTypes[2], 0);
+    storeConst("true", primitiveTypes[BOOL_TYPE], 1);
+    storeConst("TRUE", primitiveTypes[BOOL_TYPE], 1);
+    storeConst("false", primitiveTypes[BOOL_TYPE], 0);
+    storeConst("FALSE", primitiveTypes[BOOL_TYPE], 0);
 
     enterScope();
 
@@ -74,9 +82,10 @@ int SymbolTable::lookupType(std::string id)
         auto found = curLayer->types.find(id);
         if(found != curLayer->types.end())
         {
-            for (auto idx = 0U; idx < primativeTypes.size(); idx++)
+
+            for (auto idx = 0U; idx < primitiveTypes.size(); idx++)
             {
-                if (&primativeTypes[idx] == found->second)
+                if (primitiveTypes[idx] == found->second)
                 {
                     return idx;
                 }
@@ -120,7 +129,7 @@ void SymbolTable::storeVar(std::string id, Type* t, std::string reg)
     checkForIdDefined(id);
     auto topLayer = stack.rbegin();
     Variable v;
-    if (t == getPrimativeType("string"))
+    if (t == getPrimitiveType("string"))
     { // string gets special treatment. space to be made in footer
         v.offset = varStrCount;
         varStrCount++;
@@ -165,19 +174,18 @@ void SymbolTable::leaveScope()
     stack.pop_back();
 }
 
-Type* SymbolTable::getPrimativeType(std::string s)
+Type* SymbolTable::getPrimitiveType(std::string s)
 {
-    auto found = std::find(primativeTypes.begin(), primativeTypes.end(), s);
-    if (found == primativeTypes.end())
-    {
-        throw std::domain_error("Primative type " + s + " not found");
-    }
-    return &(*found);
+    if (s == "boolean")     return primitiveTypes[BOOL_TYPE];
+    if (s == "integer")     return primitiveTypes[INT_TYPE];
+    if (s == "character")   return primitiveTypes[CHAR_TYPE];
+    if (s == "string")      return primitiveTypes[STR_TYPE];
+    throw std::domain_error("Primitive type " + s + " not found");
 }
 
-Type* SymbolTable::getPrimativeType(int i)
+Type* SymbolTable::getPrimitiveType(int i)
 {
-    return &primativeTypes[i];
+    return primitiveTypes[i];
 }
 
 std::vector<std::string> SymbolTable::getStringList()

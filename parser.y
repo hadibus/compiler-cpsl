@@ -201,7 +201,7 @@ TypeDecls    : TypeDecls TypeDecl
 TypeDecl : IDENTSY EQSY Type SCOLONSY {cg.storeType($1, $3);}
          ;
 
-Type : SimpleType {$$ = $1;}
+Type : SimpleType {}
      | RecordType {}
      | ArrayType {}
      ;
@@ -354,7 +354,7 @@ FunctionCall : IDENTSY LPARENSY OptArguments RPARENSY {}
              ;
 
 LValue : LValue DOTSY IDENTSY {}
-       | LValue LBRACKETSY Expression RBRACKETSY {}
+       | LValue LBRACKETSY Expression RBRACKETSY {/*$$ = cg.getLvalArr($1,$3);*/}
        | IDENTSY {$$ = cg.getLval($1);}
        ;
 %%
