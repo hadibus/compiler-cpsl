@@ -576,7 +576,7 @@ const unsigned STRING_VAR_SIZE = 64;
             {
                 lFExpr->setValue(lFExpr->getValue() || rFExpr->getValue());
 
-                lFExpr->setType(st.getPrimitiveType("booelan"));
+                lFExpr->setType(st.getPrimitiveType("boolean"));
                 return l;
             }
         }
@@ -1068,6 +1068,15 @@ const unsigned STRING_VAR_SIZE = 64;
         throw std::logic_error("noTypeExpr");
     }
 
+    int CodeGenerator::unOp(int i, int (CodeGenerator::*cb)(int))
+    {
+        if (auto e = dynamic_cast<LvalExpression*>(expressions[i]))
+        {
+            i = loadReg(e);
+        }
+        return (this->*cb)(i);
+    }
+
     int CodeGenerator::unOpNeg(int i)
     {
         if (!dynamic_cast<IntegerType *>(expressions[i]->getType()))
@@ -1080,22 +1089,6 @@ const unsigned STRING_VAR_SIZE = 64;
             return i;
         }
         else
-        if (auto e = dynamic_cast<LvalExpression*>(expressions[i]))
-        {
-            auto reg = st.requestRegister();
-            auto reg2 = st.requestRegister();
-
-            std::cout
-            << "\tlw " << *reg << ", " << e->getOffset() << "(" << e->getRegister() << ")" << std::endl
-            << "\tneg " << *reg << ", " << *reg << std::endl;
-
-            auto regExpr = new RegisterExpression();
-            regExpr->setRegister(reg);
-            regExpr->setType(e->getType());
-            expressions.push_back(regExpr);
-            return expressions.size() - 1;
-        }
-        else
         if (auto e = dynamic_cast<RegisterExpression*>(expressions[i]))
         {
             auto reg = st.requestRegister();
@@ -1106,6 +1099,7 @@ const unsigned STRING_VAR_SIZE = 64;
 
             return i;
         }
+        throw std::logic_error("noTypeExpr");
     }
     int CodeGenerator::unOpNot(int i)
     {
@@ -1128,40 +1122,22 @@ const unsigned STRING_VAR_SIZE = 64;
             return i;
         }
         else
-        if (auto e = dynamic_cast<LvalExpression*>(expressions[i]))
-        {
-            auto reg = st.requestRegister();
-            auto reg2 = st.requestRegister();
-            auto reg3 = st.requestRegister();
 
-            std::cout 
-            << "\tlw " << *reg << ", " << e->getOffset() << "(" << e->getRegister() << ")" << std::endl
-            << "\tslti " << *reg2 << ", " << *reg << ", 1" << std::endl
-            << "\tslti " << *reg3 << ", " << *reg << ", 0" << std::endl
-            << "\txor " << *reg << ", " << *reg2 << ", " << *reg3 << std::endl;
-
-            auto regExpr = new RegisterExpression();
-            regExpr->setRegister(reg);
-            regExpr->setType(st.getPrimitiveType("boolean"));
-            expressions.push_back(regExpr);
-            return expressions.size() - 1;
-        }
-        else
         if (auto e = dynamic_cast<RegisterExpression*>(expressions[i]))
         {
             auto reg = st.requestRegister();
             auto reg2 = st.requestRegister();
 
             std::cout
-            << "\tslti " << *reg << ", " << e->getRegister() << ", 1" << std::endl
-            << "\tslti " << *reg2 << ", " << e->getRegister() << ", 0" << std::endl
-            << "\txor " << e->getRegister() << ", " << *reg << ", " << *reg2 << std::endl;
+            << "\tslti " << *reg << ", " << *e->getRegister() << ", 1" << std::endl
+            << "\tslti " << *reg2 << ", " << *e->getRegister() << ", 0" << std::endl
+            << "\txor " << *e->getRegister() << ", " << *reg << ", " << *reg2 << std::endl;
 
             e->setType(st.getPrimitiveType("boolean"));
 
             return i;
         }
-        throw std::logic_error("Unknown expression type");
+        throw std::logic_error("noTypeExpr");
     }
 
 
@@ -1183,28 +1159,14 @@ const unsigned STRING_VAR_SIZE = 64;
             return i;
         }
         else
-        if (auto e = dynamic_cast<LvalExpression*>(expressions[i]))
-        {
-            auto reg = st.requestRegister();
-
-            std::cout 
-            << "\tlw " << *reg << ", " << e->getOffset() << "(" << e->getRegister() << ")" << std::endl
-            << "\taddi " << *reg << ", " << *reg << ", -1" << std::endl;
-
-            auto regExpr = new RegisterExpression();
-            regExpr->setRegister(reg);
-            regExpr->setType(e->getType());
-            expressions.push_back(regExpr);
-            return expressions.size() - 1;
-        }
-        else
         if (auto e = dynamic_cast<RegisterExpression*>(expressions[i]))
         {
             std::cout
-            << "\taddi " << e->getRegister() << ", " << *e->getRegister() << ", -1" << std::endl;
+            << "\taddi " << *e->getRegister() << ", " << *e->getRegister() << ", -1" << std::endl;
 
             return i;
         }
+        throw std::logic_error("noTypeExpr");
     }
 
     int CodeGenerator::unOpIncr(int i)
@@ -1225,26 +1187,12 @@ const unsigned STRING_VAR_SIZE = 64;
             return i;
         }
         else
-        if (auto e = dynamic_cast<LvalExpression*>(expressions[i]))
-        {
-            auto reg = st.requestRegister();
-
-            std::cout 
-            << "\tlw " << *reg << ", " << e->getOffset() << "(" << e->getRegister() << ")" << std::endl
-            << "\taddi " << *reg << ", " << *reg << ", 1" << std::endl;
-
-            auto regExpr = new RegisterExpression();
-            regExpr->setRegister(reg);
-            regExpr->setType(e->getType());
-            expressions.push_back(regExpr);
-            return expressions.size() - 1;
-        }
-        else
         if (auto e = dynamic_cast<RegisterExpression*>(expressions[i]))
         {
             std::cout
-            << "\taddi " << e->getRegister() << ", " << *e->getRegister() << ", 1" << std::endl;
+            << "\taddi " << *e->getRegister() << ", " << *e->getRegister() << ", 1" << std::endl;
 
             return i;
         }
+        throw std::logic_error("noTypeExpr");
     }

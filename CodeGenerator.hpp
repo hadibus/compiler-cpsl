@@ -63,7 +63,7 @@ public:
     void doStop();
     void storeConst(char*, int);
     
-
+    int unOp(int,int (CodeGenerator::*)(int));
     int unOpNeg(int);
     int unOpNot(int);
     int unOpDecr(int);

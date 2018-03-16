@@ -342,12 +342,12 @@ Expression : CHARCONSTSY                         {$$ = cg.charLiteral(yylval.cha
            | INTSY                               {$$ = cg.intLiteral($1);}
            | LPARENSY Expression RPARENSY        {$$ = $2;}
            | LValue                              {}
-           | MINUSSY Expression %prec UMINUSSY   {$$ = cg.unOpNeg($2);}
-           | NOTSY Expression                    {$$ = cg.unOpNot($2);}
+           | MINUSSY Expression %prec UMINUSSY   {$$ = cg.unOp($2,&CodeGenerator::unOpNeg);}
+           | NOTSY Expression                    {$$ = cg.unOp($2,&CodeGenerator::unOpNot);}
            | ORDSY LPARENSY Expression RPARENSY  {$$ = cg.intCast($3);}
-           | PREDSY LPARENSY Expression RPARENSY {$$ = cg.unOpDecr($3);}
+           | PREDSY LPARENSY Expression RPARENSY {$$ = cg.unOp($3,&CodeGenerator::unOpDecr);}
            | STRINGSY                            {$$ = cg.stringLiteral($1);}
-           | SUCCSY LPARENSY Expression RPARENSY {$$ = cg.unOpIncr($3);}
+           | SUCCSY LPARENSY Expression RPARENSY {$$ = cg.unOp($3,&CodeGenerator::unOpIncr);}
            ;
 
 FunctionCall : IDENTSY LPARENSY OptArguments RPARENSY {}
