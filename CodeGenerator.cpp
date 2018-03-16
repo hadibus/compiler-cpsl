@@ -3,13 +3,17 @@
 #include "CodeGenerator.hpp"
 #include "FoldExpression.hpp"
 #include "LvalExpression.hpp"
+#include "BooleanType.hpp"
+#include "CharacterType.hpp"
+#include "IntegerType.hpp"
+#include "StringType.hpp"
 
 const unsigned STRING_VAR_SIZE = 64;
 
     int CodeGenerator::charLiteral(char c)
     {
         FoldExpression *fe = new FoldExpression();
-        fe->setType(st.getPrimativeType("char"));
+        fe->setType(st.getPrimitiveType("character"));
         fe->setValue(c);
         expressions.push_back(fe);
         return expressions.size() - 1;
@@ -18,8 +22,8 @@ const unsigned STRING_VAR_SIZE = 64;
     void CodeGenerator::assertIntOrChar(int i)
     {
         auto e = expressions[i];
-        auto charType = st.getPrimativeType("char");
-        auto intType = st.getPrimativeType("integer");
+        auto charType = st.getPrimitiveType("character");
+        auto intType = st.getPrimitiveType("integer");
         if (e->getType() != charType && e->getType() != intType)
         {
                 throw std::runtime_error("invalid conversion");
@@ -30,14 +34,14 @@ const unsigned STRING_VAR_SIZE = 64;
     {
         assertIntOrChar(i);
         auto e = expressions[i];
-        e->setType(st.getPrimativeType("char"));
+        e->setType(st.getPrimitiveType("character"));
         return i;
     }
 
     int CodeGenerator::intLiteral(int i)
     {
         FoldExpression *fe = new FoldExpression();
-        fe->setType(st.getPrimativeType("integer"));
+        fe->setType(st.getPrimitiveType("integer"));
         fe->setValue(i);
         expressions.push_back(fe);
         return expressions.size() - 1;
@@ -47,14 +51,14 @@ const unsigned STRING_VAR_SIZE = 64;
     {
         assertIntOrChar(i);
         auto e = expressions[i];
-        e->setType(st.getPrimativeType("integer"));
+        e->setType(st.getPrimitiveType("integer"));
         return i; 
     }
 
     int CodeGenerator::stringLiteral(char* cstr)
     {
         FoldExpression *fe = new FoldExpression();
-        fe->setType(st.getPrimativeType("string"));
+        fe->setType(st.getPrimitiveType("string"));
         fe->setValue(st.storeStringLiteral(cstr));
         expressions.push_back(fe);
         return expressions.size() - 1;
@@ -65,22 +69,22 @@ const unsigned STRING_VAR_SIZE = 64;
         auto e = expressions[i];
         if(auto fe = dynamic_cast<FoldExpression*>(e))
         {
-            if (fe->getType() == st.getPrimativeType("string"))
+            if (fe->getType() == st.getPrimitiveType("string"))
             {
                 std::cout
                 << "\tla $a0, STR" << fe->getValue() << std::endl
                 << "\tli $v0, 4" << std::endl
                 << "\tsyscall" << std::endl;
             }
-            else if (fe->getType() == st.getPrimativeType("char"))
+            else if (fe->getType() == st.getPrimitiveType("character"))
             {
                 std::cout
                 << "\tla $a0, " << fe->getValue() << std::endl
                 << "\tli $v0, 11" << std::endl
                 << "\tsyscall" << std::endl;
             }
-            else if (fe->getType() == st.getPrimativeType("integer")
-                  || fe->getType() == st.getPrimativeType("boolean"))
+            else if (fe->getType() == st.getPrimitiveType("integer")
+                  || fe->getType() == st.getPrimitiveType("boolean"))
             {
                 std::cout
                 << "\tla $a0, " << fe->getValue() << std::endl
@@ -101,16 +105,16 @@ const unsigned STRING_VAR_SIZE = 64;
                 << "(" << *le->getRegister() << ")" << std::endl
             << "\tla $a0, (" << *reg << ")" << std::endl;
 
-            if (le->getType() == st.getPrimativeType("string"))
+            if (le->getType() == st.getPrimitiveType("string"))
             {
                 std::cout << "\tli $v0, 4" << std::endl;
             }
-            else if (le->getType() == st.getPrimativeType("char"))
+            else if (le->getType() == st.getPrimitiveType("character"))
             {
                 std::cout << "\tli $v0, 11" << std::endl;
             }
-            else if (le->getType() == st.getPrimativeType("integer")
-                  || le->getType() == st.getPrimativeType("boolean"))
+            else if (le->getType() == st.getPrimitiveType("integer")
+                  || le->getType() == st.getPrimitiveType("boolean"))
             {
                 std::cout << "\tli $v0, 1" << std::endl;
             }
@@ -125,16 +129,16 @@ const unsigned STRING_VAR_SIZE = 64;
         {
             std::cout << "\tla $a0, (" << *re->getRegister() << ")" << std::endl;
 
-            if (re->getType() == st.getPrimativeType("string"))
+            if (re->getType() == st.getPrimitiveType("string"))
             {
                 std::cout << "\tli $v0, 4" << std::endl;
             }
-            else if (re->getType() == st.getPrimativeType("char"))
+            else if (re->getType() == st.getPrimitiveType("character"))
             {
                 std::cout << "\tli $v0, 11" << std::endl;
             }
-            else if (re->getType() == st.getPrimativeType("integer")
-                  || re->getType() == st.getPrimativeType("boolean"))
+            else if (re->getType() == st.getPrimitiveType("integer")
+                  || re->getType() == st.getPrimitiveType("boolean"))
             {
                 std::cout << "\tli $v0, 1" << std::endl;
             }
@@ -195,7 +199,7 @@ const unsigned STRING_VAR_SIZE = 64;
 
     int CodeGenerator::storeType(char* id, int i)
     {
-        auto type = st.getPrimativeType(i);
+        auto type = st.getPrimitiveType(i);
         st.storeType(id, type);
     }
 
@@ -222,7 +226,7 @@ const unsigned STRING_VAR_SIZE = 64;
     void CodeGenerator::makeVars(int i, std::string reg)
     {
         //TODO: change the type system.
-        auto type = st.getPrimativeType(i);
+        auto type = st.getPrimitiveType(i);
         for (const auto & name : tempStrList)
         {
             st.storeVar(name, type, reg);
@@ -329,8 +333,8 @@ const unsigned STRING_VAR_SIZE = 64;
         read string 8
         read character 12
         */
-        if (le->getType() == st.getPrimativeType("integer")
-         || le->getType() == st.getPrimativeType("boolean"))
+        if (le->getType() == st.getPrimitiveType("integer")
+         || le->getType() == st.getPrimitiveType("boolean"))
         {
             std::cout << "\tli $v0, 5" << std::endl
             << "\tsyscall" << std::endl
@@ -338,14 +342,14 @@ const unsigned STRING_VAR_SIZE = 64;
             << std::endl;
 
         }
-        else if (le->getType() == st.getPrimativeType("char"))
+        else if (le->getType() == st.getPrimitiveType("character"))
         {
             std::cout << "\tli $v0, 12" << std::endl
             << "\tsyscall" << std::endl
             << "\tsw $v0, " << le->getOffset() << "(" << *le->getRegister() << ")" 
             << std::endl;
         }
-        else if (le->getType() == st.getPrimativeType("string"))
+        else if (le->getType() == st.getPrimitiveType("string"))
         {
             std::cout
             << "\tla $a0, VAR_STR" << le->getOffset() << std::endl
@@ -390,8 +394,8 @@ const unsigned STRING_VAR_SIZE = 64;
         {
             throw std::runtime_error("binary operation on distinct types is prohibited");
         }
-        if(*(expressions[l]->getType()) == "string"
-        || *(expressions[r]->getType()) == "string")
+        if(dynamic_cast<StringType*>(expressions[l]->getType())
+        || dynamic_cast<StringType*>(expressions[r]->getType()))
         {
             throw std::runtime_error("Binary op on string is prohibited");
         }
@@ -472,7 +476,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 << "\tand " << *lRegExpr->getRegister() << ", " << *lRegExpr->getRegister() << ", " << *rRegExpr->getRegister() << std::endl;
 
                 rRegExpr->releaseRegister();
-                lRegExpr->setType(st.getPrimativeType("boolean"));
+                lRegExpr->setType(st.getPrimitiveType("boolean"));
                 return l;
             }
             else
@@ -485,7 +489,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 << "\tsne " << *reg << ", $zero, " << rFExpr->getValue() << std::endl
                 << "\tand " << *lRegExpr->getRegister() << ", " << *lRegExpr->getRegister() << ", " << *reg << std::endl;
 
-                lRegExpr->setType(st.getPrimativeType("boolean"));
+                lRegExpr->setType(st.getPrimitiveType("boolean"));
                 return l;
             }
         }
@@ -500,14 +504,14 @@ const unsigned STRING_VAR_SIZE = 64;
                 << "\tsne " << *rRegExpr->getRegister() << ", $zero, " << *rRegExpr->getRegister() << std::endl
                 << "\tand " << *rRegExpr->getRegister() << ", " << *reg << ", " << *rRegExpr->getRegister() << std::endl;
 
-                rRegExpr->setType(st.getPrimativeType("boolean"));
+                rRegExpr->setType(st.getPrimitiveType("boolean"));
                 return r;
             }
             else
             if(rFExpr)
             {
                 lFExpr->setValue(lFExpr->getValue() && rFExpr->getValue());
-                lFExpr->setType(st.getPrimativeType("boolean"));
+                lFExpr->setType(st.getPrimitiveType("boolean"));
                 return l;
             }
         }
@@ -533,7 +537,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 << std::endl;
 
                 rRegExpr->releaseRegister();
-                lRegExpr->setType(st.getPrimativeType("boolean"));
+                lRegExpr->setType(st.getPrimitiveType("boolean"));
                 return l;
             }
             else
@@ -547,7 +551,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 << "\tor " << *lRegExpr->getRegister() << ", " << *lRegExpr->getRegister() << ", " << *reg
                 << std::endl;
 
-                lRegExpr->setType(st.getPrimativeType("boolean"));
+                lRegExpr->setType(st.getPrimitiveType("boolean"));
                 return l;
             }
         }
@@ -564,7 +568,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 << "\tor " << *rRegExpr->getRegister() << ", " << *rRegExpr->getRegister() << ", " << *reg
                 << std::endl;
 
-                rRegExpr->setType(st.getPrimativeType("boolean"));
+                rRegExpr->setType(st.getPrimitiveType("boolean"));
                 return l;
             }
             else
@@ -572,7 +576,7 @@ const unsigned STRING_VAR_SIZE = 64;
             {
                 lFExpr->setValue(lFExpr->getValue() || rFExpr->getValue());
 
-                lFExpr->setType(st.getPrimativeType("booelan"));
+                lFExpr->setType(st.getPrimitiveType("booelan"));
                 return l;
             }
         }
@@ -1066,7 +1070,7 @@ const unsigned STRING_VAR_SIZE = 64;
 
     int CodeGenerator::unOpNeg(int i)
     {
-        if (*expressions[i]->getType() != "integer")
+        if (!dynamic_cast<IntegerType *>(expressions[i]->getType()))
         {
             throw std::runtime_error("Non integer negation");
         }
@@ -1105,8 +1109,8 @@ const unsigned STRING_VAR_SIZE = 64;
     }
     int CodeGenerator::unOpNot(int i)
     {
-        if (*expressions[i]->getType() != "integer"
-         && *expressions[i]->getType() != "boolean")
+        if (!dynamic_cast<IntegerType*>(expressions[i]->getType())
+         && !dynamic_cast<BooleanType*>(expressions[i]->getType()))
         {
             throw std::runtime_error("Negation is allowed only for integer and boolean datatypes");
         }
@@ -1120,7 +1124,7 @@ const unsigned STRING_VAR_SIZE = 64;
             default:
                 e->setValue(0);
             }
-            e->setType(st.getPrimativeType("boolean"));
+            e->setType(st.getPrimitiveType("boolean"));
             return i;
         }
         else
@@ -1138,7 +1142,7 @@ const unsigned STRING_VAR_SIZE = 64;
 
             auto regExpr = new RegisterExpression();
             regExpr->setRegister(reg);
-            regExpr->setType(st.getPrimativeType("boolean"));
+            regExpr->setType(st.getPrimitiveType("boolean"));
             expressions.push_back(regExpr);
             return expressions.size() - 1;
         }
@@ -1153,7 +1157,7 @@ const unsigned STRING_VAR_SIZE = 64;
             << "\tslti " << *reg2 << ", " << e->getRegister() << ", 0" << std::endl
             << "\txor " << e->getRegister() << ", " << *reg << ", " << *reg2 << std::endl;
 
-            e->setType(st.getPrimativeType("boolean"));
+            e->setType(st.getPrimitiveType("boolean"));
 
             return i;
         }
@@ -1163,12 +1167,12 @@ const unsigned STRING_VAR_SIZE = 64;
 
     int CodeGenerator::unOpDecr(int i)
     {
-        if (*expressions[i]->getType() == "string")
+        if (dynamic_cast<StringType*>(expressions[i]->getType()))
         {
             throw std::runtime_error("Decrement of string datatype is prohibited");
         }
 
-        if (*expressions[i]->getType() == "boolean")
+        if (dynamic_cast<BooleanType*>(expressions[i]->getType()))
         {
             return unOpNeg(i);
         }
@@ -1205,12 +1209,12 @@ const unsigned STRING_VAR_SIZE = 64;
 
     int CodeGenerator::unOpIncr(int i)
     {
-        if (*expressions[i]->getType() == "string")
+        if (dynamic_cast<StringType*>(expressions[i]->getType()))
         {
             throw std::runtime_error("Increment of string datatype is prohibited");
         }
 
-        if (*expressions[i]->getType() == "boolean")
+        if (dynamic_cast<BooleanType*>(expressions[i]->getType()))
         {
             return unOpNeg(i);
         }
