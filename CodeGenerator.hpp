@@ -57,7 +57,7 @@ public:
     void printHeader();
     void printFooter();
 
-    void writeExpression(int);
+    int writeExpression(int);
     void readToLval(int);
 
     void doStop();

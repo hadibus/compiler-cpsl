@@ -310,8 +310,8 @@ ReadArgs : ReadArgs COMMASY LValue {cg.readToLval($3);}
 WriteStatement : WRITESY LPARENSY WriteArgs RPARENSY {cg.clearExpressions();}
                ;
 
-WriteArgs : WriteArgs COMMASY Expression {cg.writeExpression($3);}
-          | Expression                   {cg.writeExpression($1);}
+WriteArgs : WriteArgs COMMASY Expression {cg.unOp($3,&CodeGenerator::writeExpression);}
+          | Expression                   {cg.unOp($1,&CodeGenerator::writeExpression);}
           ;
 
 ProcedureCall : IDENTSY LPARENSY OptArguments RPARENSY {}

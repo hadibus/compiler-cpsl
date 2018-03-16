@@ -64,7 +64,7 @@ const unsigned STRING_VAR_SIZE = 64;
         return expressions.size() - 1;
     }
 
-    void CodeGenerator::writeExpression(int i)
+    int CodeGenerator::writeExpression(int i)
     {
         auto e = expressions[i];
         if(auto fe = dynamic_cast<FoldExpression*>(e))
@@ -95,37 +95,9 @@ const unsigned STRING_VAR_SIZE = 64;
             {
                 throw std::logic_error("This type aint defined!");
             }
-
         }
-        else if (auto le = dynamic_cast<LvalExpression*>(e))
-        {
-            auto reg = st.requestRegister();
-            std::cout
-            << "\tlw " << *reg << ", " << le->getOffset() 
-                << "(" << *le->getRegister() << ")" << std::endl
-            << "\tla $a0, (" << *reg << ")" << std::endl;
-
-            if (le->getType() == st.getPrimitiveType("string"))
-            {
-                std::cout << "\tli $v0, 4" << std::endl;
-            }
-            else if (le->getType() == st.getPrimitiveType("character"))
-            {
-                std::cout << "\tli $v0, 11" << std::endl;
-            }
-            else if (le->getType() == st.getPrimitiveType("integer")
-                  || le->getType() == st.getPrimitiveType("boolean"))
-            {
-                std::cout << "\tli $v0, 1" << std::endl;
-            }
-            else
-            {
-                throw std::logic_error("This type aint defined!");
-            }
-            std::cout << "\tsyscall" << std::endl;
-
-        }
-        else if (auto re = dynamic_cast<RegisterExpression*>(e))
+        else
+        if (auto re = dynamic_cast<RegisterExpression*>(e))
         {
             std::cout << "\tla $a0, (" << *re->getRegister() << ")" << std::endl;
 
@@ -153,6 +125,7 @@ const unsigned STRING_VAR_SIZE = 64;
         {
             throw std::logic_error("dynamic cast didn't work");
         }
+        return {};
     }
 
 
