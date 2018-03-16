@@ -1150,7 +1150,7 @@ const unsigned STRING_VAR_SIZE = 64;
 
         if (dynamic_cast<BooleanType*>(expressions[i]->getType()))
         {
-            return unOpNeg(i);
+            return unOpNot(i);
         }
 
         if (auto e = dynamic_cast<FoldExpression*>(expressions[i]))
@@ -1178,7 +1178,7 @@ const unsigned STRING_VAR_SIZE = 64;
 
         if (dynamic_cast<BooleanType*>(expressions[i]->getType()))
         {
-            return unOpNeg(i);
+            return unOpNot(i);
         }
 
         if (auto e = dynamic_cast<FoldExpression*>(expressions[i]))
