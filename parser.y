@@ -354,7 +354,7 @@ FunctionCall : IDENTSY LPARENSY OptArguments RPARENSY {}
              ;
 
 LValue : LValue DOTSY IDENTSY {}
-       | LValue LBRACKETSY Expression RBRACKETSY {/*$$ = cg.getLvalArr($1,$3);*/}
+       | LValue LBRACKETSY Expression RBRACKETSY {$$ = cg.getLvalArr($1,$3);}
        | IDENTSY {$$ = cg.getLval($1);}
        ;
 %%

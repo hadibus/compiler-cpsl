@@ -11,6 +11,26 @@
 
 const unsigned STRING_VAR_SIZE = 64;
 
+    void tellMeTheType(Type*t)
+    {
+        if(dynamic_cast<ArrayType*>(t))
+        {
+            std::cerr << "Array" << std::endl;
+        }
+        if(dynamic_cast<IntegerType*>(t))
+        {
+            std::cerr << "Integer" << std::endl;
+        }
+        if(dynamic_cast<BooleanType*>(t))
+        {
+            std::cerr << "Boolean"<< std::endl;
+        }
+        if(dynamic_cast<CharacterType*>(t))
+        {
+            std::cerr <<"CharacterType"<< std::endl;
+        }
+    }
+
     int CodeGenerator::charLiteral(char c)
     {
         FoldExpression *fe = new FoldExpression();
@@ -239,12 +259,59 @@ const unsigned STRING_VAR_SIZE = 64;
 
     }
 
-    /*
-    int CodeGenerator::getLvalArr(int lv, int ex)
+    
+    int CodeGenerator::getLvalArr(int lv, int rexp)
     {
-        
+        auto lvalExp = dynamic_cast<LvalExpression*>(expressions[lv]);
+        if (!lvalExp) throw std::logic_error("array lval not lval...");
+        auto arrType = dynamic_cast<ArrayType*>(expressions[lv]->getType());
+        if(!arrType)
+        {
+            throw std::runtime_error(
+                "Array syntax used on non-array");
+        }
+
+        if (auto rle = dynamic_cast<LvalExpression*>(expressions[rexp]))
+        {
+            rexp = loadReg(rle);
+        }
+        auto lowerBound = arrType->getLowerBound();
+        if (auto rfexp = dynamic_cast<FoldExpression*>(expressions[rexp]))
+        {
+            auto val = rfexp->getValue() - lowerBound;
+            if (val < 0 || val >= arrType->size())
+            {
+                throw std::runtime_error("Array index out of bounds");
+            }
+            auto offset = val * arrType->getBaseSizeRecusive();
+            lvalExp->setOffset(lvalExp->getOffset() + offset);
+            tellMeTheType(lvalExp->getType());
+            lvalExp->setType(arrType->getBaseType());
+            tellMeTheType(lvalExp->getType());
+            return lv;
+        }
+        if (auto rrexp = dynamic_cast<RegisterExpression*>(expressions[rexp]))
+        {
+            auto reg = rrexp->getRegister();
+            auto reg2 = st.requestRegister();
+            std::cout
+            << "\tsub " << *reg << ", " << *reg << ", " << lowerBound << std::endl 
+            << "\tmul " << *reg << ", " << *reg << ", " << arrType->getBaseSizeRecusive() << std::endl
+            // got i
+            << "\taddi " << *reg2 << ", " << *lvalExp->getRegister() << ", " << lvalExp->getOffset() << std::endl
+            // add offset to base reg.
+            << "\tadd " << *reg2 << ", " << *reg2 << ", " << *reg << std::endl;
+            // we now have a new lval with an offset of 0.
+            lvalExp->setOffset(0);
+            lvalExp->setRegister(reg2);
+            lvalExp->setType(arrType->getBaseType());
+
+            rrexp->releaseRegister();
+            return lv;
+        }
+        throw std::logic_error("what the???");
     }
-    */
+
 
     int CodeGenerator::assignExprToLval(int li, int ei)
     {
@@ -257,6 +324,8 @@ const unsigned STRING_VAR_SIZE = 64;
         }
         if (lvale->getType() != expr->getType())
         {
+            //tellMeTheType(expressions[li]->getType());
+            //tellMeTheType(expressions[ei]->getType());
             throw std::runtime_error("Types do not match");
         }
 
@@ -1185,18 +1254,18 @@ const unsigned STRING_VAR_SIZE = 64;
         //type class contains info about the size.
 
         auto lowerBound = lfe->getValue();
-        //size in bytes
-        auto size = rfe->getValue() - lfe->getValue();
-        if (size < 0)
+        //size of layer.  not total bytes
+        auto size = rfe->getValue() - lfe->getValue() +1/*inclusive*/;
+        if (size <= 0)
         {
             throw std::runtime_error(
-                "Value of array lower bound must be less than upper bound");
+                "Value of array lower bound must be <= upper bound");
         }
 
-        auto tt = st.getIneffableType(t); //may be primitive, array, record
-        //multiply by base type size. if primitive, size is 4U.
-        size *= tt->size(); 
+        auto tt = st.getIneffableType(t); //may be primitive, array, record 
         auto newType = new ArrayType(size,tt,lowerBound);
 
         return st.addIneffableType(newType);
     }
+
+    

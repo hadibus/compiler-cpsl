@@ -9,6 +9,7 @@ public:
     Primitive():Type(4U){};
     Primitive(unsigned size):Type(size){};
     virtual ~Primitive(){};
+    int getSizeRecursive(){return size();};
 };
 
 #endif
