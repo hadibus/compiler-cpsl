@@ -285,9 +285,7 @@ const unsigned STRING_VAR_SIZE = 64;
             }
             auto offset = val * arrType->getBaseSizeRecusive();
             lvalExp->setOffset(lvalExp->getOffset() + offset);
-            tellMeTheType(lvalExp->getType());
             lvalExp->setType(arrType->getBaseType());
-            tellMeTheType(lvalExp->getType());
             return lv;
         }
         if (auto rrexp = dynamic_cast<RegisterExpression*>(expressions[rexp]))
@@ -328,7 +326,21 @@ const unsigned STRING_VAR_SIZE = 64;
             //tellMeTheType(expressions[ei]->getType());
             throw std::runtime_error("Types do not match");
         }
-
+        if (auto at = dynamic_cast<ArrayType*>(lvale->getType()))
+        {
+            auto rlvale = dynamic_cast<LvalExpression*>(expressions[ei]);
+            auto undersize = at->getSizeRecursive();
+            auto reg = st.requestRegister();
+            for (auto i = 0; i < undersize; i+=4)
+            {
+                std::cout
+                << "\tlw " << *reg << ", " << rlvale->getOffset() + i
+                    << "(" << *rlvale->getRegister() << ")" << std::endl
+                << "\tsw " << *reg << ", " << lvale->getOffset() + i
+                    << "(" << *lvale->getRegister() << ")" << std::endl;
+            }
+        }
+        else
         if (auto fe = dynamic_cast<FoldExpression*>(expr))
         {
             auto reg = st.requestRegister();

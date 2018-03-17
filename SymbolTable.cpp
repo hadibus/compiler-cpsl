@@ -82,7 +82,15 @@ int SymbolTable::lookupType(std::string id)
         auto found = curLayer->types.find(id);
         if(found != curLayer->types.end())
         {
-
+            auto foundInIneff = std::find(
+                ineffableTypes.begin(),
+                ineffableTypes.end(),
+                found->second);
+            if (foundInIneff != ineffableTypes.end())
+            {
+                return foundInIneff - ineffableTypes.begin();
+            }
+            
             for (auto idx = 0U; idx < primitiveTypes.size(); idx++)
             {
                 if (primitiveTypes[idx] == found->second)
@@ -91,6 +99,8 @@ int SymbolTable::lookupType(std::string id)
                     return ineffableTypes.size() - 1;
                 }
             }
+            
+
         }
     }
     throw std::runtime_error("Type " + id + " not defined");
