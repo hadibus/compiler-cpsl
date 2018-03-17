@@ -7,6 +7,7 @@
 #include "CharacterType.hpp"
 #include "IntegerType.hpp"
 #include "StringType.hpp"
+#include "ArrayType.hpp"
 
 const unsigned STRING_VAR_SIZE = 64;
 
@@ -170,9 +171,9 @@ const unsigned STRING_VAR_SIZE = 64;
         << std::endl;
     }
 
-    int CodeGenerator::storeType(char* id, int i)
+    int CodeGenerator::storeType(char* id, int t)
     {
-        auto type = st.getPrimitiveType(i);
+        auto type = st.getIneffableType(t);
         st.storeType(id, type);
     }
 
@@ -198,8 +199,7 @@ const unsigned STRING_VAR_SIZE = 64;
 
     void CodeGenerator::makeVars(int i, std::string reg)
     {
-        //TODO: change the type system.
-        auto type = st.getPrimitiveType(i);
+        auto type = st.getIneffableType(i);
         for (const auto & name : tempStrList)
         {
             st.storeVar(name, type, reg);
@@ -1168,4 +1168,35 @@ const unsigned STRING_VAR_SIZE = 64;
             return i;
         }
         throw std::logic_error("noTypeExpr");
+    }
+
+    int CodeGenerator::buildArray(int le, int re, int t)
+    {
+        if (expressions[le]->getType() != expressions[re]->getType())
+        {
+            throw std::runtime_error("Array bound datatypes must match");
+        }
+        auto lfe = dynamic_cast<FoldExpression*>(expressions[le]);
+        auto rfe = dynamic_cast<FoldExpression*>(expressions[re]);
+        if (!lfe || !rfe)
+        {
+            throw std::runtime_error("Array bounds must be constants");
+        }
+        //type class contains info about the size.
+
+        auto lowerBound = lfe->getValue();
+        //size in bytes
+        auto size = rfe->getValue() - lfe->getValue();
+        if (size < 0)
+        {
+            throw std::runtime_error(
+                "Value of array lower bound must be less than upper bound");
+        }
+
+        auto tt = st.getIneffableType(t); //may be primitive, array, record
+        //multiply by base type size. if primitive, size is 4U.
+        size *= tt->size(); 
+        auto newType = new ArrayType(size,tt,lowerBound);
+
+        return st.addIneffableType(newType);
     }

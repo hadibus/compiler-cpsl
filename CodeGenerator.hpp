@@ -72,6 +72,8 @@ public:
 
     int getLvalArr(int,int);
 
+    int buildArray(int,int,int);
+
 private:
     SymbolTable st;
     std::vector<Expression*> expressions;

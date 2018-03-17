@@ -87,7 +87,8 @@ int SymbolTable::lookupType(std::string id)
             {
                 if (primitiveTypes[idx] == found->second)
                 {
-                    return idx;
+                    ineffableTypes.push_back(primitiveTypes[idx]);
+                    return ineffableTypes.size() - 1;
                 }
             }
         }
@@ -137,7 +138,7 @@ void SymbolTable::storeVar(std::string id, Type* t, std::string reg)
     else
     {
         v.offset = offset;
-        offset += 4;
+        offset += t->size();
     }
     v.reg = reg;
     v.type = t;
@@ -186,6 +187,17 @@ Type* SymbolTable::getPrimitiveType(std::string s)
 Type* SymbolTable::getPrimitiveType(int i)
 {
     return primitiveTypes[i];
+}
+
+int SymbolTable::addIneffableType(Type *t)
+{
+    ineffableTypes.push_back(t);
+    return ineffableTypes.size() - 1;
+}
+
+Type * SymbolTable::getIneffableType(int i)
+{
+    return ineffableTypes[i];
 }
 
 std::vector<std::string> SymbolTable::getStringList()

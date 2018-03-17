@@ -223,7 +223,7 @@ IdentList : IdentList COMMASY IDENTSY {cg.appendStrList(yylval.str_val);}
           | IDENTSY {cg.appendStrList(yylval.str_val);}
           ;
 
-ArrayType : ARRAYSY LBRACKETSY Expression COLONSY Expression RBRACKETSY OFSY Type {}
+ArrayType : ARRAYSY LBRACKETSY Expression COLONSY Expression RBRACKETSY OFSY Type {$$ = cg.buildArray($3,$5,$8);}
           ;
 
 OptVarDecls : VARSY VarDecls
