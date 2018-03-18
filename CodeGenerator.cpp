@@ -215,7 +215,6 @@ const unsigned STRING_VAR_SIZE = 64;
 
     int CodeGenerator::appendStrList(int i,char* c)
     {
-        std::cerr << "app " << c <<std::endl;
         tempStrList[i].push_back(c);
         return i;
     }
@@ -223,7 +222,6 @@ const unsigned STRING_VAR_SIZE = 64;
     int CodeGenerator::makeStrList(char* c)
     {
         tempStrList.emplace_back();
-        std::cerr << "make " << c << std::endl;
         tempStrList.rbegin()->push_back(c);
         return tempStrList.size() - 1;
     }
@@ -252,11 +250,13 @@ const unsigned STRING_VAR_SIZE = 64;
         //tempStrList[l].clear();
 
         //debug
+        /*
         std::cerr << "RECORD:" << std::endl;
         for (const auto & item : record->getMembers())
         {
             std::cerr << "\t" << item.first << std::endl;
         }
+        */
 
         return st.addIneffableType(record);
     }
@@ -425,6 +425,21 @@ const unsigned STRING_VAR_SIZE = 64;
         {
             auto rlvale = dynamic_cast<LvalExpression*>(expressions[ei]);
             auto undersize = at->getSizeRecursive();
+            auto reg = st.requestRegister();
+            for (auto i = 0; i < undersize; i+=4)
+            {
+                std::cout
+                << "\tlw " << *reg << ", " << rlvale->getOffset() + i
+                    << "(" << *rlvale->getRegister() << ")" << std::endl
+                << "\tsw " << *reg << ", " << lvale->getOffset() + i
+                    << "(" << *lvale->getRegister() << ")" << std::endl;
+            }
+        }
+        else
+        if (auto rt = dynamic_cast<RecordType*>(lvale->getType()))
+        {
+            auto rlvale = dynamic_cast<LvalExpression*>(expressions[ei]);
+            auto undersize = rt->getSizeRecursive();
             auto reg = st.requestRegister();
             for (auto i = 0; i < undersize; i+=4)
             {

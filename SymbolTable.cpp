@@ -148,32 +148,11 @@ void SymbolTable::storeVar(std::string id, Type* t, std::string reg)
     else
     {
         v.offset = offset;
-        std::cerr << "offset of " << id << ": " << offset << std::endl;
         offset += t->getSizeRecursive();
     }
     v.reg = reg;
     v.type = t;
     topLayer->variables[id] = v;
-
-    //debug
-    /*
-    std::cerr << "variable " << id << " has type:" << std::endl;
-    Type* temp = t;
-    for(;;)
-    {
-        if(auto a = dynamic_cast<ArrayType*>(temp))
-        {
-            std::cerr << "Array->";
-            temp = a->getBaseType();
-        }
-        else
-        if(dynamic_cast<Primitive*>(temp))
-        {
-            std::cerr << "Primitive" << std::endl;\
-            break;
-        }
-    }
-    */
 }
 
 int SymbolTable::storeStringLiteral(std::string s)
