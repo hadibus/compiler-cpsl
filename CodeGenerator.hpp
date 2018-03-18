@@ -52,6 +52,9 @@ public:
 
     int storeType(char*, int);
 
+    int makeRecordVars(int);
+    int mergeRecords(int, int);
+
     int lookupType(char*);
 
     void printHeader();

@@ -8,6 +8,7 @@
 #include "IntegerType.hpp"
 #include "StringType.hpp"
 #include "ArrayType.hpp"
+#include "RecordType.hpp"
 
 const unsigned STRING_VAR_SIZE = 64;
 
@@ -225,6 +226,30 @@ const unsigned STRING_VAR_SIZE = 64;
             st.storeVar(name, type, reg);
         }
         tempStrList.clear();
+    }
+
+    int CodeGenerator::makeRecordVars(int i)
+    {
+        auto type = st.getIneffableType(i);
+
+        auto size = tempStrList.size();
+        auto record = new RecordType(size);
+        for (const auto & name : tempStrList)
+        {
+            record->addMember(name, type);
+        }
+        tempStrList.clear();
+        return st.addIneffableType(record);
+    }
+
+    int CodeGenerator::mergeRecords(int l, int r)
+    {
+        auto lr = dynamic_cast<RecordType*>(st.getIneffableType(l));
+        auto rr = dynamic_cast<RecordType*>(st.getIneffableType(r));
+
+        lr->addMembers(rr->getMembers());
+        //TODO: cleanup of all the newed records
+        return l;
     }
 
     int CodeGenerator::getLval(std::string lval)

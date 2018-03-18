@@ -209,14 +209,14 @@ Type : SimpleType {}
 SimpleType : IDENTSY {$$ = cg.lookupType(yylval.str_val);}
            ;
 
-RecordType : RECORDSY FieldDecls ENDSY {}
+RecordType : RECORDSY FieldDecls ENDSY {$$ = $2;}
            ;
 
-FieldDecls : FieldDecls FieldDecl {}
-           | {}
+FieldDecls : FieldDecls FieldDecl {$$ = cg.mergeRecords($1,$2);}
+           | FieldDecl {}
            ;
 
-FieldDecl : IdentList COLONSY Type SCOLONSY {}
+FieldDecl : IdentList COLONSY Type SCOLONSY {$$ = cg.makeRecordVars($3);}
           ;
 
 IdentList : IdentList COMMASY IDENTSY {cg.appendStrList(yylval.str_val);}
