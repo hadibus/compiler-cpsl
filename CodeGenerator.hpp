@@ -15,6 +15,7 @@ public:
     {
         st.initialize();
         printHeader();
+        tempStrList.emplace_back();
     };
 
     ~CodeGenerator()
@@ -23,8 +24,9 @@ public:
     }
 
     void assertIntOrChar(int);
-    void appendStrList(char*);
-    void makeVars(int, std::string reg = "$gp");
+    int appendStrList(int,char*);
+    int makeStrList(char*);
+    void makeVars(int,int, std::string reg = "$gp");
     int getLval(std::string);
     int assignExprToLval(int,int);
     void clearExpressions();
@@ -52,8 +54,10 @@ public:
 
     int storeType(char*, int);
 
-    int makeRecordVars(int);
+    int makeRecordVars(int,int);
     int mergeRecords(int, int);
+    void addTempStrLayer();
+    void removeTempStrLayer();
 
     int lookupType(char*);
 
@@ -74,13 +78,14 @@ public:
 
 
     int getLvalArr(int,int);
+    int getLvalRec(int,char*);
 
     int buildArray(int,int,int);
 
 private:
     SymbolTable st;
     std::vector<Expression*> expressions;
-    std::vector<std::string> tempStrList;
+    std::vector<std::vector<std::string>> tempStrList;
     std::vector<int> tempExprIdxs;
 
 };

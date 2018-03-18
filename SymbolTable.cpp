@@ -148,6 +148,7 @@ void SymbolTable::storeVar(std::string id, Type* t, std::string reg)
     else
     {
         v.offset = offset;
+        std::cerr << "offset of " << id << ": " << offset << std::endl;
         offset += t->getSizeRecursive();
     }
     v.reg = reg;

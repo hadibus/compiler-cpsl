@@ -213,32 +213,51 @@ const unsigned STRING_VAR_SIZE = 64;
         expressions.clear();
     }
 
-    void CodeGenerator::appendStrList(char* c)
+    int CodeGenerator::appendStrList(int i,char* c)
     {
-        tempStrList.push_back(c);
+        std::cerr << "app " << c <<std::endl;
+        tempStrList[i].push_back(c);
+        return i;
     }
 
-    void CodeGenerator::makeVars(int i, std::string reg)
+    int CodeGenerator::makeStrList(char* c)
     {
-        auto type = st.getIneffableType(i);
-        for (const auto & name : tempStrList)
+        tempStrList.emplace_back();
+        std::cerr << "make " << c << std::endl;
+        tempStrList.rbegin()->push_back(c);
+        return tempStrList.size() - 1;
+    }
+
+    void CodeGenerator::makeVars(int l,int r, std::string reg)
+    {
+        auto type = st.getIneffableType(r);
+
+        for (const auto & name : tempStrList[l])
         {
             st.storeVar(name, type, reg);
         }
-        tempStrList.clear();
+        //tempStrList[l].clear();
     }
 
-    int CodeGenerator::makeRecordVars(int i)
+    int CodeGenerator::makeRecordVars(int l,int r)
     {
-        auto type = st.getIneffableType(i);
+        auto type = st.getIneffableType(r);
 
         auto size = tempStrList.size();
         auto record = new RecordType(size);
-        for (const auto & name : tempStrList)
+        for (const auto & name : tempStrList[l])
         {
             record->addMember(name, type);
         }
-        tempStrList.clear();
+        //tempStrList[l].clear();
+
+        //debug
+        std::cerr << "RECORD:" << std::endl;
+        for (const auto & item : record->getMembers())
+        {
+            std::cerr << "\t" << item.first << std::endl;
+        }
+
         return st.addIneffableType(record);
     }
 
@@ -249,7 +268,9 @@ const unsigned STRING_VAR_SIZE = 64;
 
         lr->addMembers(rr->getMembers());
         //TODO: cleanup of all the newed records
+
         return l;
+
     }
 
     int CodeGenerator::getLval(std::string lval)
@@ -333,6 +354,55 @@ const unsigned STRING_VAR_SIZE = 64;
             return lv;
         }
         throw std::logic_error("what the???");
+    }
+
+    int CodeGenerator::getLvalRec(int lv,char* rid)
+    {
+        auto lvalExp = dynamic_cast<LvalExpression*>(expressions[lv]);
+        if (!lvalExp) throw std::logic_error("record lval not lval...");
+        auto recType = dynamic_cast<RecordType*>(expressions[lv]->getType());
+        if(!recType)
+        {
+            throw std::runtime_error(
+                "Record syntax used on non-record");
+        }
+
+        auto members = recType->getMembers();
+        auto found = members.find(rid);
+        if (found == members.end())
+        {
+            throw std::runtime_error(
+                "recType doesn't have member " + std::string(rid));
+        }
+
+
+        auto offset = 0;
+        for (auto i = members.begin(); ;i++)
+        {
+            if (i == members.end()) throw std::runtime_error("what?");
+            if (i->first != std::string(rid))
+            {
+                offset += i->second->getSizeRecursive();
+            }
+            else
+            {
+                lvalExp->setType(i->second);
+                break;
+            }
+        }
+
+    
+        auto reg = st.requestRegister();
+        std::cout
+        << "\taddi " << *reg << ", " << *lvalExp->getRegister() 
+            << ", " << lvalExp->getOffset() << std::endl
+        << "\taddi " << *reg << ", " << *reg
+            << ", " << offset << std::endl;
+
+        lvalExp->setOffset(0);
+        lvalExp->setRegister(reg);
+        
+        return lv;
     }
 
 

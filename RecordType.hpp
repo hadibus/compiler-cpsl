@@ -23,7 +23,7 @@ public:
     void addMember(std::string s,Type* t)
     {
         auto f = members.find(s);
-        if (f == members.end())
+        if (f != members.end())
         {
            throw std::runtime_error(
                "id " + s + " already defined in record");
@@ -37,6 +37,7 @@ public:
         {
             totSize += i->second->getSizeRecursive();
         }
+        return totSize;
     }
     int size(){return members.size();};
 

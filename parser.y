@@ -206,7 +206,7 @@ Type : SimpleType {}
      | ArrayType {}
      ;
 
-SimpleType : IDENTSY {$$ = cg.lookupType(yylval.str_val);}
+SimpleType : IDENTSY {$$ = cg.lookupType($1);}
            ;
 
 RecordType : RECORDSY FieldDecls ENDSY {$$ = $2;}
@@ -216,11 +216,11 @@ FieldDecls : FieldDecls FieldDecl {$$ = cg.mergeRecords($1,$2);}
            | FieldDecl {}
            ;
 
-FieldDecl : IdentList COLONSY Type SCOLONSY {$$ = cg.makeRecordVars($3);}
+FieldDecl : IdentList COLONSY Type SCOLONSY {$$ = cg.makeRecordVars($1,$3);}
           ;
 
-IdentList : IdentList COMMASY IDENTSY {cg.appendStrList(yylval.str_val);}
-          | IDENTSY {cg.appendStrList(yylval.str_val);}
+IdentList : IdentList COMMASY IDENTSY {$$ = cg.appendStrList($1,$3);}
+          | IDENTSY {$$ = cg.makeStrList($1);}
           ;
 
 ArrayType : ARRAYSY LBRACKETSY Expression COLONSY Expression RBRACKETSY OFSY Type {$$ = cg.buildArray($3,$5,$8);}
@@ -234,7 +234,7 @@ VarDecls    : VarDecls VarDecl
             | VarDecl
             ;
 
-VarDecl : IdentList COLONSY Type SCOLONSY {cg.makeVars($3);}
+VarDecl : IdentList COLONSY Type SCOLONSY {cg.makeVars($1,$3);}
         ;
 
 Statement : Assignment {}
@@ -353,7 +353,7 @@ Expression : CHARCONSTSY                         {$$ = cg.charLiteral(yylval.cha
 FunctionCall : IDENTSY LPARENSY OptArguments RPARENSY {}
              ;
 
-LValue : LValue DOTSY IDENTSY {}
+LValue : LValue DOTSY IDENTSY {$$ = cg.getLvalRec($1,$3);}
        | LValue LBRACKETSY Expression RBRACKETSY {$$ = cg.getLvalArr($1,$3);}
        | IDENTSY {$$ = cg.getLval($1);}
        ;
