@@ -454,10 +454,22 @@ const unsigned STRING_VAR_SIZE = 64;
         if (auto fe = dynamic_cast<FoldExpression*>(expr))
         {
             auto reg = st.requestRegister();
-            std::cout
-            << "\taddi " << *reg << ", $0, " << fe->getValue() << std::endl
-            << "\tsw " << *reg << ", " << lvale->getOffset() 
-                << "(" << *lvale->getRegister() << ")" << std::endl;
+            if (fe->getType() == st.getPrimitiveType("string"))
+            {
+                auto reg2 = st.requestRegister();
+                std::cout 
+                << "\tla " << *reg << ", STR" << fe->getValue() << std::endl
+                << "\tla " << *reg2 << ", VAR_STR" << lvale->getOffset() << std::endl
+                << "\tsw " << *reg << ", 0(" << *reg2 << ")" << std::endl;
+                //TODO: get string assignment working
+            }
+            else
+            {
+                std::cout
+                << "\taddi " << *reg << ", $0, " << fe->getValue() << std::endl
+                << "\tsw " << *reg << ", " << lvale->getOffset() 
+                    << "(" << *lvale->getRegister() << ")" << std::endl;
+            }
 
         }
         else if (auto le = dynamic_cast<LvalExpression*>(expr))
@@ -518,7 +530,8 @@ const unsigned STRING_VAR_SIZE = 64;
             std::cout
             << "\tla $a0, VAR_STR" << le->getOffset() << std::endl
             << "\tli $a1, " << STRING_VAR_SIZE << std::endl
-            << "\tli $v0, 8" << std::endl;
+            << "\tli $v0, 8" << std::endl
+            << "\tsyscall" << std::endl;
         }
         else
         {
@@ -539,14 +552,24 @@ const unsigned STRING_VAR_SIZE = 64;
     }
     int CodeGenerator::loadReg(LvalExpression* le)
     {
-        auto reg = st.requestRegister();
-
-        std::cout
-        << "\tlw " << *reg << ", " << le->getOffset() << "(" << *le->getRegister() << ")"
-        << std::endl;
-        
         auto regExpr = new RegisterExpression();
-        regExpr->setRegister(reg);
+        if (le->getType() != st.getPrimitiveType("string"))
+        {
+            auto reg = st.requestRegister();
+            std::cout
+            << "\tlw " << *reg << ", " << le->getOffset() << "(" << *le->getRegister() << ")"
+            << std::endl;
+            regExpr->setRegister(reg);
+        }
+        else
+        {
+            auto reg = std::make_shared<std::string>("$a0");
+            std::cout
+            << "\tla " << *reg << ", VAR_STR" << le->getOffset() << std::endl;
+            
+            regExpr->setRegister(reg);
+        }
+        
         regExpr->setType(le->getType());
         expressions.push_back(regExpr);
         return expressions.size() - 1;
