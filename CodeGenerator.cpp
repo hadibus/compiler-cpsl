@@ -624,7 +624,12 @@ const unsigned STRING_VAR_SIZE = 64;
     }
 
     int CodeGenerator::binOpAnd(int l, int r)
-    {
+    {   
+        if (expressions[l]->getType() != st.getPrimitiveType("boolean")
+         && expressions[r]->getType() != st.getPrimitiveType("integer"))
+        {
+            throw std::runtime_error("\"and\"ed types must be the same");
+        }
         auto lFExpr = dynamic_cast<FoldExpression*>(expressions[l]);
         auto rFExpr = dynamic_cast<FoldExpression*>(expressions[r]);
         auto lRegExpr = dynamic_cast<RegisterExpression*>(expressions[l]);
@@ -635,25 +640,19 @@ const unsigned STRING_VAR_SIZE = 64;
             if (rRegExpr)
             {
                 std::cout
-                << "\tsne " << *lRegExpr->getRegister() << ", $zero, " << *lRegExpr->getRegister() << std::endl
-                << "\tsne " << *rRegExpr->getRegister() << ", $zero, " << *rRegExpr->getRegister() << std::endl
-                << "\tand " << *lRegExpr->getRegister() << ", " << *lRegExpr->getRegister() << ", " << *rRegExpr->getRegister() << std::endl;
+                << "\tand " << *lRegExpr->getRegister() << ", " << *lRegExpr->getRegister() << ", " << *rRegExpr->getRegister()
+                << std::endl;
 
                 rRegExpr->releaseRegister();
-                lRegExpr->setType(st.getPrimitiveType("boolean"));
                 return l;
             }
             else
             if(rFExpr)
             {
-                auto reg = st.requestRegister();
-
                 std::cout
-                << "\tsne " << *lRegExpr->getRegister() << ", $zero, " << *lRegExpr->getRegister() << std::endl
-                << "\tsne " << *reg << ", $zero, " << rFExpr->getValue() << std::endl
-                << "\tand " << *lRegExpr->getRegister() << ", " << *lRegExpr->getRegister() << ", " << *reg << std::endl;
+                << "\tandi " << *lRegExpr->getRegister() << ", " << *lRegExpr->getRegister() << ", " << rFExpr->getValue()
+                << std::endl;
 
-                lRegExpr->setType(st.getPrimitiveType("boolean"));
                 return l;
             }
         }
@@ -662,20 +661,16 @@ const unsigned STRING_VAR_SIZE = 64;
         {
             if(rRegExpr)
             {
-                auto reg = st.requestRegister();
                 std::cout
-                << "\tsne " << *reg << ", $zero, " << lFExpr->getValue() << std::endl
-                << "\tsne " << *rRegExpr->getRegister() << ", $zero, " << *rRegExpr->getRegister() << std::endl
-                << "\tand " << *rRegExpr->getRegister() << ", " << *reg << ", " << *rRegExpr->getRegister() << std::endl;
+                << "\tandi " << *rRegExpr->getRegister() << ", " << *rRegExpr->getRegister() << ", " << lFExpr->getValue()
+                << std::endl;
 
-                rRegExpr->setType(st.getPrimitiveType("boolean"));
                 return r;
             }
             else
             if(rFExpr)
             {
-                lFExpr->setValue(lFExpr->getValue() && rFExpr->getValue());
-                lFExpr->setType(st.getPrimitiveType("boolean"));
+                lFExpr->setValue(lFExpr->getValue() & rFExpr->getValue());
                 return l;
             }
         }
@@ -684,6 +679,11 @@ const unsigned STRING_VAR_SIZE = 64;
 
     int CodeGenerator::binOpOr(int l, int r)
     {
+        if (expressions[l]->getType() != st.getPrimitiveType("boolean")
+         && expressions[r]->getType() != st.getPrimitiveType("integer"))
+        {
+            throw std::runtime_error("\"or\"ed types must be the same");
+        }
         auto lFExpr = dynamic_cast<FoldExpression*>(expressions[l]);
         auto rFExpr = dynamic_cast<FoldExpression*>(expressions[r]);
         auto lRegExpr = dynamic_cast<RegisterExpression*>(expressions[l]);
@@ -695,27 +695,19 @@ const unsigned STRING_VAR_SIZE = 64;
             {
 
                 std::cout
-                << "\tsne " << *lRegExpr->getRegister() << ", $zero, " << *lRegExpr->getRegister() << std::endl
-                << "\tsne " << *rRegExpr->getRegister() << ", $zero, " << *rRegExpr->getRegister() << std::endl
                 << "\tor " << *lRegExpr->getRegister() << ", " << *lRegExpr->getRegister() << ", " << *rRegExpr->getRegister()
                 << std::endl;
 
                 rRegExpr->releaseRegister();
-                lRegExpr->setType(st.getPrimitiveType("boolean"));
                 return l;
             }
             else
             if(rFExpr)
             {
-                auto reg = st.requestRegister();
-
                 std::cout
-                << "\tsne " << *lRegExpr->getRegister() << ", $zero, " << *lRegExpr->getRegister() << std::endl
-                << "\tsne " << *reg << ", $zero, " << rFExpr->getValue() << std::endl
-                << "\tor " << *lRegExpr->getRegister() << ", " << *lRegExpr->getRegister() << ", " << *reg
+                << "\tori " << *lRegExpr->getRegister() << ", " << *lRegExpr->getRegister() << ", " << rFExpr->getValue()
                 << std::endl;
 
-                lRegExpr->setType(st.getPrimitiveType("boolean"));
                 return l;
             }
         }
@@ -724,23 +716,16 @@ const unsigned STRING_VAR_SIZE = 64;
         {
             if(rRegExpr)
             {
-                auto reg = st.requestRegister();
-
                 std::cout
-                << "\tsne " << *reg << ", $zero, " << lFExpr->getValue() << std::endl
-                << "\tsne " << *rRegExpr->getRegister() << ", $zero, " << *rRegExpr->getRegister() << std::endl
-                << "\tor " << *rRegExpr->getRegister() << ", " << *rRegExpr->getRegister() << ", " << *reg
+                << "\tori " << *rRegExpr->getRegister() << ", " << *rRegExpr->getRegister() << ", " << lFExpr->getValue()
                 << std::endl;
 
-                rRegExpr->setType(st.getPrimitiveType("boolean"));
                 return l;
             }
             else
             if(rFExpr)
             {
-                lFExpr->setValue(lFExpr->getValue() || rFExpr->getValue());
-
-                lFExpr->setType(st.getPrimitiveType("boolean"));
+                lFExpr->setValue(lFExpr->getValue() | rFExpr->getValue());
                 return l;
             }
         }
