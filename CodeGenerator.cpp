@@ -10,6 +10,8 @@
 #include "ArrayType.hpp"
 #include "RecordType.hpp"
 
+extern void yyerror(const char*);
+
 const unsigned STRING_VAR_SIZE = 64;
 
     void tellMeTheType(Type*t)
@@ -170,7 +172,6 @@ const unsigned STRING_VAR_SIZE = 64;
         std::cout
         << ".data" << std::endl
         << ".asciiz" << std::endl;
-        std::cout << "GA:" << std::endl;
         auto sl = st.getStringList();
         for (auto i = 0U; i < sl.size(); i++)
         {
@@ -181,6 +182,7 @@ const unsigned STRING_VAR_SIZE = 64;
         {
             std::cout << "VAR_STR" << i << ": .space " << STRING_VAR_SIZE << std::endl;
         }
+        std::cout << "GA: .align 2" << std::endl;
     }
 
     void CodeGenerator::doStop()
@@ -1396,6 +1398,55 @@ const unsigned STRING_VAR_SIZE = 64;
         auto newType = new ArrayType(size,tt,lowerBound);
 
         return st.addIneffableType(newType);
+    }
+
+    int CodeGenerator::preWhile()
+    {
+        static int num = 0;
+        std::cout
+        << "WB" << num << ":" << std::endl;
+        return num++;
+    }
+
+    void CodeGenerator::startWhile(int num, int i)
+    {
+        if (expressions[i]->getType() == st.getPrimitiveType("string"))
+        {
+            yyerror("While statement can't evaluate string type");
+        }
+
+        if (auto fe = dynamic_cast<FoldExpression*>(expressions[i]))
+        {
+            auto reg = st.requestRegister();
+            std::cout
+            << "\tli " << *reg << ", " << fe->getValue() << std::endl
+            << "\tbeq " << *reg << ", $zero, WE" << num << std::endl;
+        }
+        else
+        if (auto le = dynamic_cast<LvalExpression*>(expressions[i]))
+        {
+            auto reg = st.requestRegister();
+            std::cout
+            << "\tlw " << *reg << ", " << le->getOffset() << "(" 
+                << *le->getRegister() << ")" << std::endl
+            << "\tbeq " << *reg << ", $zero, WE" << num << std::endl;
+        }
+        else
+        if (auto re = dynamic_cast<RegisterExpression*>(expressions[i]))
+        {
+            std::cout
+            << "\tbeq " << *re->getRegister() << ", $zero, WE" << num
+            << std::endl;
+
+            re->releaseRegister();
+        }
+    }
+
+    void CodeGenerator::endWhile(int i)
+    {
+        std::cout
+        << "\tj WB" << i << std::endl
+        << "WE" << i << ":" << std::endl;
     }
 
     

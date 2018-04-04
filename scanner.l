@@ -76,7 +76,7 @@ write|WRITE         {return WRITESY;}
 '\\r'               {yylval.char_val = '\r';return CHARCONSTSY;}
 '\\?.'             {yylval.char_val = yytext[1];return CHARCONSTSY;}
 
-\"[a-zA-Z0-9~`!@'#$%^&*()_+=\-\[\]{}\\\/><,.:;| ]*\" {yylval.str_val = strdup(yytext); return STRINGSY;}
+\"[a-zA-Z0-9~`!?@'#$%^&*()_+=\-\[\]{}\\\/><,.:;| ]*\" {yylval.str_val = strdup(yytext); return STRINGSY;}
 
 \$.*$ {}
 \n {}

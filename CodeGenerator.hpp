@@ -64,6 +64,10 @@ public:
     void printHeader();
     void printFooter();
 
+    int preWhile();
+    void startWhile(int,int);
+    void endWhile(int);
+
     int writeExpression(int);
     void readToLval(int);
 

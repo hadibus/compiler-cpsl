@@ -122,6 +122,7 @@ CodeGenerator cg;
 %type <int_val> Type 
 %type <int_val> WhileHead 
 %type <int_val> WhileStatement 
+%type <int_val> WhileSymbol
 %type <int_val> WriteArgs 
 %type <int_val> WriteStatement  
 %type <str_val> IDENTSY 
@@ -239,7 +240,7 @@ VarDecl : IdentList COLONSY Type SCOLONSY {cg.makeVars($1,$3);}
 
 Statement : Assignment {}
           | IfStatement {}
-          | WhileStatement {}
+          | WhileStatement {cg.endWhile($1);}
           | RepeatStatement {}
           | ForStatement {}
           | StopStatement {}
@@ -276,8 +277,10 @@ ElseClause : ELSESY StatementList {}
 WhileStatement : WhileHead DOSY StatementList ENDSY {}
                ;
 
-WhileHead : WHILESY Expression {}
+WhileHead : WhileSymbol Expression {cg.startWhile($1,$2);}
           ;
+
+WhileSymbol : WHILESY {$$ = cg.preWhile();}
 
 RepeatStatement : REPEATSY StatementList UNTILSY Expression {}
                 ;
