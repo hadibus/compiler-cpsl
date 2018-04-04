@@ -50,7 +50,7 @@ const unsigned STRING_VAR_SIZE = 64;
         auto intType = st.getPrimitiveType("integer");
         if (e->getType() != charType && e->getType() != intType)
         {
-                throw std::runtime_error("invalid conversion");
+                yyerror("invalid conversion");
         }
     }
 
@@ -117,7 +117,7 @@ const unsigned STRING_VAR_SIZE = 64;
             }
             else
             {
-                throw std::logic_error("This type aint defined!");
+                yyerror("This type aint defined!");
             }
         }
         else
@@ -140,14 +140,14 @@ const unsigned STRING_VAR_SIZE = 64;
             }
             else
             {
-                throw std::logic_error("This type aint defined!");
+                yyerror("This type aint defined!");
             }
             std::cout << "\tsyscall" << std::endl;
 
         }
         else
         {
-            throw std::logic_error("dynamic cast didn't work");
+            yyerror("dynamic cast didn't work");
         }
         return {};
     }
@@ -281,7 +281,7 @@ const unsigned STRING_VAR_SIZE = 64;
         auto v = st.lookupVar(lval);
         if (c.type == nullptr && v.reg == "")
         {
-            throw std::runtime_error("lval " + lval + " is not defined");
+            yyerror("lval is not defined");
         }
         else if (c.type != nullptr)
         {
@@ -302,7 +302,7 @@ const unsigned STRING_VAR_SIZE = 64;
         }
         else
         {
-            throw std::logic_error("Lval" + lval + " is a const and variable");
+            yyerror("Lval is a const and variable");
         }
 
     }
@@ -311,11 +311,11 @@ const unsigned STRING_VAR_SIZE = 64;
     int CodeGenerator::getLvalArr(int lv, int rexp)
     {
         auto lvalExp = dynamic_cast<LvalExpression*>(expressions[lv]);
-        if (!lvalExp) throw std::logic_error("array lval not lval...");
+        if (!lvalExp) yyerror("array lval not lval...");
         auto arrType = dynamic_cast<ArrayType*>(expressions[lv]->getType());
         if(!arrType)
         {
-            throw std::runtime_error(
+            yyerror(
                 "Array syntax used on non-array");
         }
 
@@ -329,7 +329,7 @@ const unsigned STRING_VAR_SIZE = 64;
             auto val = rfexp->getValue() - lowerBound;
             if (val < 0 || val >= arrType->size())
             {
-                throw std::runtime_error("Array index out of bounds");
+                yyerror("Array index out of bounds");
             }
             auto offset = val * arrType->getBaseSizeRecusive();
             lvalExp->setOffset(lvalExp->getOffset() + offset);
@@ -355,33 +355,31 @@ const unsigned STRING_VAR_SIZE = 64;
             rrexp->releaseRegister();
             return lv;
         }
-        throw std::logic_error("what the???");
+        yyerror("what the???");
     }
 
     int CodeGenerator::getLvalRec(int lv,char* rid)
     {
         auto lvalExp = dynamic_cast<LvalExpression*>(expressions[lv]);
-        if (!lvalExp) throw std::logic_error("record lval not lval...");
+        if (!lvalExp) yyerror("record lval not lval...");
         auto recType = dynamic_cast<RecordType*>(expressions[lv]->getType());
         if(!recType)
         {
-            throw std::runtime_error(
-                "Record syntax used on non-record");
+            yyerror("Record syntax used on non-record");
         }
 
         auto members = recType->getMembers();
         auto found = members.find(rid);
         if (found == members.end())
         {
-            throw std::runtime_error(
-                "recType doesn't have member " + std::string(rid));
+            yyerror("recType doesn't have member");
         }
 
 
         auto offset = 0;
         for (auto i = members.begin(); ;i++)
         {
-            if (i == members.end()) throw std::runtime_error("what?");
+            if (i == members.end()) yyerror("what?");
             if (i->first != std::string(rid))
             {
                 offset += i->second->getSizeRecursive();
@@ -415,13 +413,13 @@ const unsigned STRING_VAR_SIZE = 64;
 
         if(!lvale)
         {
-            throw std::logic_error("lval is not RegisterExpression");
+            yyerror("lval is not RegisterExpression");
         }
         if (lvale->getType() != expr->getType())
         {
             //tellMeTheType(expressions[li]->getType());
             //tellMeTheType(expressions[ei]->getType());
-            throw std::runtime_error("Types do not match");
+            yyerror("Types do not match");
         }
         if (auto at = dynamic_cast<ArrayType*>(lvale->getType()))
         {
@@ -491,7 +489,7 @@ const unsigned STRING_VAR_SIZE = 64;
         }
         else
         {
-            throw std::logic_error("assignment expression bad");
+            yyerror("assignment expression bad");
         }
 
         return ei;
@@ -503,7 +501,7 @@ const unsigned STRING_VAR_SIZE = 64;
         auto le = dynamic_cast<LvalExpression*>(expressions[i]);
         if (!le)
         {
-            throw std::logic_error("lval not modifiable");
+            yyerror("lval not modifiable");
         }
 
         /*
@@ -537,7 +535,7 @@ const unsigned STRING_VAR_SIZE = 64;
         }
         else
         {
-            throw std::logic_error("In read, value type is bad");
+            yyerror("In read, value type is bad");
         }
     }
 
@@ -546,7 +544,7 @@ const unsigned STRING_VAR_SIZE = 64;
         auto fe = dynamic_cast<FoldExpression*>(expressions[i]);
         if(!fe)
         {
-            throw std::logic_error("error in const decls");
+            yyerror("error in const decls");
         }
         auto t = fe->getType();
         auto val = fe->getValue();
@@ -581,12 +579,12 @@ const unsigned STRING_VAR_SIZE = 64;
     {
         if (matchTypes && (expressions[l]->getType() != expressions[r]->getType()))
         {
-            throw std::runtime_error("binary operation on distinct types is prohibited");
+            yyerror("binary operation on distinct types is prohibited");
         }
         if(dynamic_cast<StringType*>(expressions[l]->getType())
         || dynamic_cast<StringType*>(expressions[r]->getType()))
         {
-            throw std::runtime_error("Binary op on string is prohibited");
+            yyerror("Binary op on string is prohibited");
         }
 
         if(auto lLvalExpr = dynamic_cast<LvalExpression*>(expressions[l]))
@@ -645,7 +643,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 return l;
             }
         }
-        throw std::logic_error("noTypeExpr");
+        yyerror("noTypeExpr");
     }
 
     int CodeGenerator::binOpAnd(int l, int r)
@@ -653,7 +651,7 @@ const unsigned STRING_VAR_SIZE = 64;
         if (expressions[l]->getType() != st.getPrimitiveType("boolean")
          && expressions[r]->getType() != st.getPrimitiveType("integer"))
         {
-            throw std::runtime_error("\"and\"ed types must be the same");
+            yyerror("\"and\"ed types must be the same");
         }
         auto lFExpr = dynamic_cast<FoldExpression*>(expressions[l]);
         auto rFExpr = dynamic_cast<FoldExpression*>(expressions[r]);
@@ -699,7 +697,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 return l;
             }
         }
-        throw std::logic_error("noTypeExpr"); 
+        yyerror("noTypeExpr"); 
     }
 
     int CodeGenerator::binOpOr(int l, int r)
@@ -707,7 +705,7 @@ const unsigned STRING_VAR_SIZE = 64;
         if (expressions[l]->getType() != st.getPrimitiveType("boolean")
          && expressions[r]->getType() != st.getPrimitiveType("integer"))
         {
-            throw std::runtime_error("\"or\"ed types must be the same");
+            yyerror("\"or\"ed types must be the same");
         }
         auto lFExpr = dynamic_cast<FoldExpression*>(expressions[l]);
         auto rFExpr = dynamic_cast<FoldExpression*>(expressions[r]);
@@ -754,7 +752,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 return l;
             }
         }
-        throw std::logic_error("noTypeExpr"); 
+        yyerror("noTypeExpr"); 
     }
 
     int CodeGenerator::binOpEq(int l, int r)
@@ -804,7 +802,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 return l;
             }
         }
-        throw std::logic_error("noTypeExpr");         
+        yyerror("noTypeExpr");         
     }
 
     int CodeGenerator::binOpNeq(int l, int r)
@@ -852,7 +850,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 return l;
             }
         }
-        throw std::logic_error("noTypeExpr"); 
+        yyerror("noTypeExpr"); 
     }
     
     int CodeGenerator::binOpGteq(int l, int r)
@@ -900,7 +898,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 return l;
             }
         }
-        throw std::logic_error("noTypeExpr"); 
+        yyerror("noTypeExpr"); 
     }
 
     int CodeGenerator::binOpGt(int l, int r)
@@ -948,7 +946,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 return l;
             }
         }
-        throw std::logic_error("noTypeExpr");       
+        yyerror("noTypeExpr");       
     }
 
     int CodeGenerator::binOpLteq(int l, int r)
@@ -996,7 +994,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 return l;
             }
         }
-        throw std::logic_error("noTypeExpr");
+        yyerror("noTypeExpr");
     }
 
     int CodeGenerator::binOpLt(int l , int r )
@@ -1045,7 +1043,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 return l;
             }
         }
-        throw std::logic_error("noTypeExpr"); 
+        yyerror("noTypeExpr"); 
     }
 
     int CodeGenerator::binOpSub(int l, int r)
@@ -1094,7 +1092,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 return l;
             }
         }
-        throw std::logic_error("noTypeExpr"); 
+        yyerror("noTypeExpr"); 
     }
     
     int CodeGenerator::binOpMult(int l, int r)
@@ -1143,7 +1141,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 return l;
             }
         }
-        throw std::logic_error("noTypeExpr"); 
+        yyerror("noTypeExpr"); 
     }
 
     int CodeGenerator::binOpDiv(int l, int r)
@@ -1191,7 +1189,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 return l;
             }
         }
-        throw std::logic_error("noTypeExpr");
+        yyerror("noTypeExpr");
     }
 
     int CodeGenerator::binOpMod(int l, int r)
@@ -1239,7 +1237,7 @@ const unsigned STRING_VAR_SIZE = 64;
                 return l;
             }
         }
-        throw std::logic_error("noTypeExpr");
+        yyerror("noTypeExpr");
     }
 
     int CodeGenerator::unOp(int i, int (CodeGenerator::*cb)(int))
@@ -1255,7 +1253,7 @@ const unsigned STRING_VAR_SIZE = 64;
     {
         if (!dynamic_cast<IntegerType *>(expressions[i]->getType()))
         {
-            throw std::runtime_error("Non integer negation");
+            yyerror("Non integer negation");
         }
         if (auto e = dynamic_cast<FoldExpression*>(expressions[i]))
         {
@@ -1273,14 +1271,14 @@ const unsigned STRING_VAR_SIZE = 64;
 
             return i;
         }
-        throw std::logic_error("noTypeExpr");
+        yyerror("noTypeExpr");
     }
     int CodeGenerator::unOpNot(int i)
     {
         if (!dynamic_cast<IntegerType*>(expressions[i]->getType())
          && !dynamic_cast<BooleanType*>(expressions[i]->getType()))
         {
-            throw std::runtime_error("Negation is allowed only for integer and boolean datatypes");
+            yyerror("Negation is allowed only for integer and boolean datatypes");
         }
         if (auto e = dynamic_cast<FoldExpression*>(expressions[i]))
         {
@@ -1311,7 +1309,7 @@ const unsigned STRING_VAR_SIZE = 64;
 
             return i;
         }
-        throw std::logic_error("noTypeExpr");
+        yyerror("noTypeExpr");
     }
 
 
@@ -1319,7 +1317,7 @@ const unsigned STRING_VAR_SIZE = 64;
     {
         if (dynamic_cast<StringType*>(expressions[i]->getType()))
         {
-            throw std::runtime_error("Decrement of string datatype is prohibited");
+            yyerror("Decrement of string datatype is prohibited");
         }
 
         if (dynamic_cast<BooleanType*>(expressions[i]->getType()))
@@ -1340,14 +1338,14 @@ const unsigned STRING_VAR_SIZE = 64;
 
             return i;
         }
-        throw std::logic_error("noTypeExpr");
+        yyerror("noTypeExpr");
     }
 
     int CodeGenerator::unOpIncr(int i)
     {
         if (dynamic_cast<StringType*>(expressions[i]->getType()))
         {
-            throw std::runtime_error("Increment of string datatype is prohibited");
+            yyerror("Increment of string datatype is prohibited");
         }
 
         if (dynamic_cast<BooleanType*>(expressions[i]->getType()))
@@ -1368,20 +1366,20 @@ const unsigned STRING_VAR_SIZE = 64;
 
             return i;
         }
-        throw std::logic_error("noTypeExpr");
+        yyerror("noTypeExpr");
     }
 
     int CodeGenerator::buildArray(int le, int re, int t)
     {
         if (expressions[le]->getType() != expressions[re]->getType())
         {
-            throw std::runtime_error("Array bound datatypes must match");
+            yyerror("Array bound datatypes must match");
         }
         auto lfe = dynamic_cast<FoldExpression*>(expressions[le]);
         auto rfe = dynamic_cast<FoldExpression*>(expressions[re]);
         if (!lfe || !rfe)
         {
-            throw std::runtime_error("Array bounds must be constants");
+            yyerror("Array bounds must be constants");
         }
         //type class contains info about the size.
 
@@ -1390,7 +1388,7 @@ const unsigned STRING_VAR_SIZE = 64;
         auto size = rfe->getValue() - lfe->getValue() +1/*inclusive*/;
         if (size <= 0)
         {
-            throw std::runtime_error(
+            yyerror(
                 "Value of array lower bound must be <= upper bound");
         }
 

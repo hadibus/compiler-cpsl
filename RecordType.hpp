@@ -3,7 +3,6 @@
 
 #include <map>
 #include <string>
-#include <stdexcept>
 #include "Type.hpp"
 
 class RecordType : public Type

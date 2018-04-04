@@ -1,9 +1,10 @@
 %{
 #include <iostream>
 #include <fstream>
-#include <cstdlib>
 
 #include "CodeGenerator.hpp"
+extern char * yytext;
+extern int yylineno;
 extern int yylex();
 void yyerror(const char*);
 CodeGenerator cg;
@@ -362,8 +363,9 @@ LValue : LValue DOTSY IDENTSY {$$ = cg.getLvalRec($1,$3);}
        ;
 %%
 
-void yyerror(const char* msg)
+void yyerror(const char* s)
 {
-  std::cerr << msg << std::endl;
-  exit(1);
+  std::cerr << s << " at line " << yylineno;
+  std::cerr << " near \"" << yytext << "\"" << std::endl;
+  throw /*control back to main*/;
 }

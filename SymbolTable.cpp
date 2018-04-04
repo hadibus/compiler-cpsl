@@ -1,4 +1,3 @@
-#include <stdexcept>
 #include <algorithm>
 #include <iostream>
 
@@ -8,6 +7,8 @@
 #include "IntegerType.hpp"
 #include "StringType.hpp"
 #include "SymbolTable.hpp"
+
+extern void yyerror(const char*);
 
 
 unsigned const INT_TYPE = 0, CHAR_TYPE = 1, BOOL_TYPE = 2, STR_TYPE = 3;
@@ -224,5 +225,5 @@ std::shared_ptr<std::string> SymbolTable::requestRegister()
             return reg;
         }
     }
-    throw std::logic_error("Depleted register pool");
+    yyerror("Depleted register pool");
 }
