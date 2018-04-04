@@ -1447,4 +1447,51 @@ const unsigned STRING_VAR_SIZE = 64;
         << "WE" << i << ":" << std::endl;
     }
 
-    
+    int CodeGenerator::startIf(int i,bool isElseif)
+    {
+        static int num = 0;
+        std::shared_ptr<std::string> reg;
+
+        if (expressions[i]->getType() == st.getPrimitiveType("string"))
+        {
+            yyerror("If statement can't evaluate string type");
+        }
+
+        if (auto fe = dynamic_cast<FoldExpression*>(expressions[i]))
+        {
+            reg = st.requestRegister();
+            std::cout
+            << "\tli " << *reg << ", " << fe->getValue() << std::endl;
+        }
+        else
+        if (auto le = dynamic_cast<LvalExpression*>(expressions[i]))
+        {
+            reg = st.requestRegister();
+            std::cout
+            << "\tlw " << *reg << ", " << le->getOffset() << "(" 
+                << *le->getRegister() << ")" << std::endl;
+        }
+        else
+        if (auto re = dynamic_cast<RegisterExpression*>(expressions[i]))
+        {
+            reg = re->getRegister();
+            re->releaseRegister();
+        }
+        std::cout
+        << "\tbeq " << *reg << ", $zero, ELSE" << num << std::endl;
+        if (!isElseif) endifNumber++;
+        return num++;
+    }
+
+    void CodeGenerator::endIf()
+    {
+        std::cout
+        << "ENDIF" << endifNumber-- << ":" << std::endl;
+    }
+
+    void CodeGenerator::doElse(int i)
+    {
+        std::cout
+        << "\t j ENDIF" << endifNumber << std::endl
+        << "ELSE" << i << ":" << std::endl;
+    }

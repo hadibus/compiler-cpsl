@@ -255,20 +255,23 @@ Statement : Assignment {}
 Assignment : LValue ASSIGNSY Expression {cg.assignExprToLval($1, $3);}
            ;
 
-IfStatement : IfHead ThenPart ElseIfList ElseClause ENDSY {}
+IfStatement : IfStuff ElseIfList ElseClause ENDSY {cg.endIf();}
             ;
 
-IfHead : IFSY Expression {}
+IfStuff : IfHead ThenPart {cg.doElse($1);}
+        ;
+
+IfHead : IFSY Expression {$$ = cg.startIf($2,false);}
        ;
 
 ThenPart : THENSY StatementList {}
          ;
 
-ElseIfList : ElseIfList ElseIfHead ThenPart {}
+ElseIfList : ElseIfList ElseIfHead ThenPart {cg.doElse($2);}
            | {}
            ;
 
-ElseIfHead : ELSEIFSY Expression {}
+ElseIfHead : ELSEIFSY Expression {$$ = cg.startIf($2,true);}
            ;
 
 ElseClause : ELSESY StatementList {}

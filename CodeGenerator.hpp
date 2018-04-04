@@ -11,7 +11,7 @@ class CodeGenerator
 {
 public:
 
-    CodeGenerator() : st(), expressions(), tempStrList(), tempExprIdxs()
+    CodeGenerator() : st(), expressions(), tempStrList(), tempExprIdxs(), endifNumber(-1)
     {
         st.initialize();
         printHeader();
@@ -68,6 +68,10 @@ public:
     void startWhile(int,int);
     void endWhile(int);
 
+    int startIf(int,bool);
+    void endIf();
+    void doElse(int);
+
     int writeExpression(int);
     void readToLval(int);
 
@@ -91,6 +95,7 @@ private:
     std::vector<Expression*> expressions;
     std::vector<std::vector<std::string>> tempStrList;
     std::vector<int> tempExprIdxs;
+    int endifNumber;
 
 };
 
