@@ -1495,3 +1495,44 @@ const unsigned STRING_VAR_SIZE = 64;
         << "\t j ENDIF" << endifNumber << std::endl
         << "ELSE" << i << ":" << std::endl;
     }
+
+    int CodeGenerator::startRepeat()
+    {
+        static unsigned num = 0U;
+        std::cout << "REPEAT" << num << ":" << std::endl;
+        return num++;
+    }
+
+    void CodeGenerator::endRepeat(int labelNum, int exNum)
+    {
+        if (expressions[exNum]->getType() == st.getPrimitiveType("string"))
+        {
+            yyerror("Repeat statement can't evaluate string value");
+        }
+
+        if (auto fe = dynamic_cast<FoldExpression*>(expressions[exNum]))
+        {
+            auto reg = st.requestRegister();
+            std::cout
+            << "\tli " << *reg << ", " << fe->getValue() << std::endl
+            << "\tbeq " << *reg << ", $zero, REPEAT" << labelNum << std::endl;
+        }
+        else
+        if (auto le = dynamic_cast<LvalExpression*>(expressions[exNum]))
+        {
+            auto reg = st.requestRegister();
+            std::cout
+            << "\tlw " << *reg << ", " << le->getOffset() << "(" 
+                << *le->getRegister() << ")" << std::endl
+            << "\tbeq " << *reg << ", $zero, REPEAT" << labelNum << std::endl;
+        }
+        else
+        if (auto re = dynamic_cast<RegisterExpression*>(expressions[exNum]))
+        {
+            std::cout
+            << "\tbeq " << *re->getRegister() << ", $zero, REPEAT" << labelNum
+            << std::endl;
+
+            re->releaseRegister();
+        }
+    }

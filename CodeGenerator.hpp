@@ -72,6 +72,9 @@ public:
     void endIf();
     void doElse(int);
 
+    int startRepeat();
+    void endRepeat(int,int);
+
     int writeExpression(int);
     void readToLval(int);
 

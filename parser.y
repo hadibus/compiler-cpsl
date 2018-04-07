@@ -112,7 +112,8 @@ CodeGenerator cg;
 %type <int_val> ReadArgs
 %type <int_val> ReadStatement 
 %type <int_val> RecordType 
-%type <int_val> RepeatStatement 
+%type <int_val> RepeatStatement
+%type <int_val> RepeatSymbol 
 %type <int_val> ReturnStatement 
 %type <int_val> SimpleType 
 %type <int_val> Statement 
@@ -286,8 +287,11 @@ WhileHead : WhileSymbol Expression {cg.startWhile($1,$2);}
 
 WhileSymbol : WHILESY {$$ = cg.preWhile();}
 
-RepeatStatement : REPEATSY StatementList UNTILSY Expression {}
+RepeatStatement : RepeatSymbol StatementList UNTILSY Expression {cg.endRepeat($1,$4);}
                 ;
+
+RepeatSymbol : REPEATSY {$$ = cg.startRepeat();}
+             ;
 
 ForStatement : ForHead ToHead DOSY StatementList ENDSY{}
              ;
