@@ -1497,7 +1497,7 @@ const unsigned STRING_VAR_SIZE = 64;
     void CodeGenerator::doElse(int i)
     {
         std::cout
-        << "\t j ENDIF" << endifNumberStack.back() << std::endl
+        << "\tj ENDIF" << endifNumberStack.back() << std::endl
         << "ELSE" << i << ":" << std::endl;
     }
 
