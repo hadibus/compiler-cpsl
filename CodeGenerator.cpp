@@ -1575,35 +1575,28 @@ const unsigned STRING_VAR_SIZE = 64;
             yyerror("Can't iterate to another data type");
         }
 
+
         if (auto e = dynamic_cast<LvalExpression*>(expressions[l]))
         {
             l = loadReg(e);
         }
-
         //l garuanteed to be RegisterExpression
         auto lexpr = dynamic_cast<RegisterExpression*>(expressions[l]);
 
-        if (ascending)
-        {
-            std::cout << "\tsle ";
-        }
-        else
-        {
-            std::cout << "\tsge ";
-        }
+        std::string compOp = (ascending ? "\tsle " : "\tsge ");
 
         if(auto frexpr = dynamic_cast<FoldExpression*>(expressions[r]))
         {
             std::cout
-            << *lexpr->getRegister() << ", " << *lexpr->getRegister() << ", " << frexpr->getValue()
+            << compOp << *lexpr->getRegister() << ", " << *lexpr->getRegister() << ", " << frexpr->getValue()
             << std::endl;
         }
-        if(auto rrexpr = dynamic_cast<RegisterExpression*>(expressions[r]))
+        if(auto rrexpr = dynamic_cast<LvalExpression*>(expressions[r]))
         {
+            auto reg = st.requestRegister();
             std::cout
-            << *lexpr->getRegister() << ", " << *lexpr->getRegister() << ", " << rrexpr->getRegister()
-            << std::endl;
-            rrexpr->releaseRegister();
+            << "\tlw " << *reg << ", " << rrexpr->getOffset() << "(" << *rrexpr->getRegister() << ")" << std::endl
+            << compOp << *lexpr->getRegister() << ", " << *lexpr->getRegister() << ", " << *reg << std::endl;
         }
         std::cout
         << "\tbeq " << *lexpr->getRegister() << ", $zero, FOR_END" << forStack.back()
