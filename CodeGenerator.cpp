@@ -492,7 +492,7 @@ const unsigned STRING_VAR_SIZE = 64;
             yyerror("assignment expression bad");
         }
 
-        return ei;
+        return li;
 
     }
 
@@ -1540,4 +1540,97 @@ const unsigned STRING_VAR_SIZE = 64;
 
             re->releaseRegister();
         }
+    }
+
+    int CodeGenerator::startFor(char* id, int exNum)
+    {
+        if (expressions[exNum]->getType() == st.getPrimitiveType("string"))
+        {
+            yyerror("for loop can't iterate using strings");
+        }
+
+        st.enterScope();
+        
+        auto v = st.lookupVar(id);
+        if (v.type == nullptr)
+        {
+            st.storeVar(id, expressions[exNum]->getType(), "$gp");
+        }
+        static unsigned num = 0U;
+
+        auto e = assignExprToLval(getLval(id), exNum);
+        std::cout
+        << "FOR_BEGIN" << num << ":" << std::endl;
+        forStack.push_back(num);
+        num++;
+
+        return e;
+    }
+
+    int CodeGenerator::compareFor(int l, int r, bool ascending)
+    {
+        if (expressions[l]->getType() != expressions[r]->getType())
+        {
+            yyerror("Can't iterate to another data type");
+        }
+
+        if (auto e = dynamic_cast<LvalExpression*>(expressions[l]))
+        {
+            l = loadReg(e);
+        }
+        if (auto e = dynamic_cast<LvalExpression*>(expressions[r]))
+        {
+            r = loadReg(e);
+        }
+
+        //l garuanteed to be RegisterExpression
+        auto lexpr = dynamic_cast<RegisterExpression*>(expressions[l]);
+
+        if (ascending)
+        {
+            std::cout << "\tsle ";
+        }
+        else
+        {
+            std::cout << "\tsge ";
+        }
+
+        if(auto frexpr = dynamic_cast<FoldExpression*>(expressions[r]))
+        {
+            std::cout
+            << *lexpr->getRegister() << ", " << *lexpr->getRegister() << ", " << frexpr->getValue()
+            << std::endl;
+        }
+        if(auto rrexpr = dynamic_cast<RegisterExpression*>(expressions[r]))
+        {
+            std::cout
+            << *lexpr->getRegister() << ", " << *lexpr->getRegister() << ", " << rrexpr->getRegister()
+            << std::endl;
+            rrexpr->releaseRegister();
+        }
+        std::cout
+        << "\tbeq " << *lexpr->getRegister() << ", $zero, FOR_END" << forStack.back()
+        << std::endl;
+        lexpr->releaseRegister();
+
+        forAscendStack.push_back(ascending);
+        return l;
+
+    }
+
+    void CodeGenerator::endFor(int i)
+    {
+        auto expr = dynamic_cast<LvalExpression*>(expressions[i]);
+
+        auto reg = st.requestRegister();
+        auto toAdd = (forAscendStack.back() ? 1 : -1);
+        std::cout
+        << "\tlw " << *reg << ", " << expr->getOffset() << "(" << *expr->getRegister() << ")" << std::endl
+        << "\taddi " << *reg << ", " << *reg << ", " << toAdd << std::endl
+        << "\tsw " << *reg << ", " << expr->getOffset() << "(" << *expr->getRegister() << ")" << std::endl
+        << "\tj FOR_BEGIN" << forStack.back() << std::endl
+        << "FOR_END" << forStack.back() << ":" << std::endl;
+
+        forStack.pop_back();
+        st.leaveScope();
     }

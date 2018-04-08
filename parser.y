@@ -244,7 +244,7 @@ Statement : Assignment {}
           | IfStatement {cg.endIf();}
           | WhileStatement {cg.endWhile($1);}
           | RepeatStatement {}
-          | ForStatement {}
+          | ForStatement {cg.endFor($1);}
           | StopStatement {}
           | ReturnStatement {}
           | ReadStatement {}
@@ -293,15 +293,16 @@ RepeatStatement : RepeatSymbol StatementList UNTILSY Expression {cg.endRepeat($1
 RepeatSymbol : REPEATSY {$$ = cg.startRepeat();}
              ;
 
-ForStatement : ForHead ToHead DOSY StatementList ENDSY{}
+ForStatement : ToHead DOSY StatementList ENDSY{}
              ;
 
-ForHead : FORSY IDENTSY ASSIGNSY Expression {}
+ToHead : ForHead TOSY Expression {$$ = cg.compareFor($1,$3,true);}
+       | ForHead DOWNTOSY Expression {$$ = cg.compareFor($1,$3,false);}
+       ;
+
+ForHead : FORSY IDENTSY ASSIGNSY Expression {$$ = cg.startFor($2,$4);}
         ;
 
-ToHead : TOSY Expression {}
-       | DOWNTOSY Expression {}
-       ;
 
 StopStatement : STOPSY {cg.doStop();}
               ;

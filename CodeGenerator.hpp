@@ -11,7 +11,8 @@ class CodeGenerator
 {
 public:
 
-    CodeGenerator() : st(), expressions(), tempStrList(), tempExprIdxs(), endifNumber(0), endifNumberStack()
+    CodeGenerator() : st(), expressions(), tempStrList(), tempExprIdxs(),
+        endifNumber(0), endifNumberStack(), forStack(), forAscendStack()
     {
         st.initialize();
         printHeader();
@@ -75,6 +76,10 @@ public:
     int startRepeat();
     void endRepeat(int,int);
 
+    int startFor(char*,int);
+    int compareFor(int,int,bool);
+    void endFor(int);
+
     int writeExpression(int);
     void readToLval(int);
 
@@ -100,6 +105,8 @@ private:
     std::vector<int> tempExprIdxs;
     int endifNumber;
     std::vector<int> endifNumberStack;
+    std::vector<int> forStack;
+    std::vector<bool> forAscendStack;
 
 };
 
