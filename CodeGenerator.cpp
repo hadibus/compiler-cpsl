@@ -1569,6 +1569,7 @@ const unsigned STRING_VAR_SIZE = 64;
 
     int CodeGenerator::compareFor(int l, int r, bool ascending)
     {
+        auto oldl = l;
         if (expressions[l]->getType() != expressions[r]->getType())
         {
             yyerror("Can't iterate to another data type");
@@ -1577,10 +1578,6 @@ const unsigned STRING_VAR_SIZE = 64;
         if (auto e = dynamic_cast<LvalExpression*>(expressions[l]))
         {
             l = loadReg(e);
-        }
-        if (auto e = dynamic_cast<LvalExpression*>(expressions[r]))
-        {
-            r = loadReg(e);
         }
 
         //l garuanteed to be RegisterExpression
@@ -1613,8 +1610,10 @@ const unsigned STRING_VAR_SIZE = 64;
         << std::endl;
         lexpr->releaseRegister();
 
+    
+
         forAscendStack.push_back(ascending);
-        return l;
+        return oldl;
 
     }
 
@@ -1631,6 +1630,7 @@ const unsigned STRING_VAR_SIZE = 64;
         << "\tj FOR_BEGIN" << forStack.back() << std::endl
         << "FOR_END" << forStack.back() << ":" << std::endl;
 
+        forAscendStack.pop_back();
         forStack.pop_back();
         st.leaveScope();
     }

@@ -293,7 +293,7 @@ RepeatStatement : RepeatSymbol StatementList UNTILSY Expression {cg.endRepeat($1
 RepeatSymbol : REPEATSY {$$ = cg.startRepeat();}
              ;
 
-ForStatement : ToHead DOSY StatementList ENDSY{}
+ForStatement : ToHead DOSY StatementList ENDSY{$$ = $1;}
              ;
 
 ToHead : ForHead TOSY Expression {$$ = cg.compareFor($1,$3,true);}
@@ -319,7 +319,7 @@ ReadArgs : ReadArgs COMMASY LValue {cg.readToLval($3);}
          | LValue                  {cg.readToLval($1);}
          ;
 
-WriteStatement : WRITESY LPARENSY WriteArgs RPARENSY {cg.clearExpressions();}
+WriteStatement : WRITESY LPARENSY WriteArgs RPARENSY {}
                ;
 
 WriteArgs : WriteArgs COMMASY Expression {cg.unOp($3,&CodeGenerator::writeExpression);}
