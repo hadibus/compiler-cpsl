@@ -1479,20 +1479,25 @@ const unsigned STRING_VAR_SIZE = 64;
         }
         std::cout
         << "\tbeq " << *reg << ", $zero, ELSE" << num << std::endl;
-        if (!isElseif) endifNumber++;
+        if (!isElseif)
+        {
+            endifNumberStack.push_back(endifNumber);
+            endifNumber++;
+        }
         return num++;
     }
 
     void CodeGenerator::endIf()
     {
         std::cout
-        << "ENDIF" << endifNumber-- << ":" << std::endl;
+        << "ENDIF" << endifNumberStack.back() << ":" << std::endl;
+        endifNumberStack.pop_back();
     }
 
     void CodeGenerator::doElse(int i)
     {
         std::cout
-        << "\t j ENDIF" << endifNumber << std::endl
+        << "\t j ENDIF" << endifNumberStack.back() << std::endl
         << "ELSE" << i << ":" << std::endl;
     }
 

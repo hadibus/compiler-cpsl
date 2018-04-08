@@ -241,7 +241,7 @@ VarDecl : IdentList COLONSY Type SCOLONSY {cg.makeVars($1,$3);}
         ;
 
 Statement : Assignment {}
-          | IfStatement {}
+          | IfStatement {cg.endIf();}
           | WhileStatement {cg.endWhile($1);}
           | RepeatStatement {}
           | ForStatement {}
@@ -256,7 +256,7 @@ Statement : Assignment {}
 Assignment : LValue ASSIGNSY Expression {cg.assignExprToLval($1, $3);}
            ;
 
-IfStatement : IfStuff ElseIfList ElseClause ENDSY {cg.endIf();}
+IfStatement : IfStuff ElseIfList ElseClause ENDSY {}
             ;
 
 IfStuff : IfHead ThenPart {cg.doElse($1);}

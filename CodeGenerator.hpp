@@ -11,7 +11,7 @@ class CodeGenerator
 {
 public:
 
-    CodeGenerator() : st(), expressions(), tempStrList(), tempExprIdxs(), endifNumber(-1)
+    CodeGenerator() : st(), expressions(), tempStrList(), tempExprIdxs(), endifNumber(0), endifNumberStack()
     {
         st.initialize();
         printHeader();
@@ -99,6 +99,7 @@ private:
     std::vector<std::vector<std::string>> tempStrList;
     std::vector<int> tempExprIdxs;
     int endifNumber;
+    std::vector<int> endifNumberStack;
 
 };
 
