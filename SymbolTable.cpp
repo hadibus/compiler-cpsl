@@ -142,9 +142,9 @@ void SymbolTable::storeVar(std::string id, Type* t, std::string reg)
     auto topLayer = stack.rbegin();
     Variable v;
     if (t == getPrimitiveType("string"))
-    { // string gets special treatment. space to be made in footer
-        v.offset = varStrCount;
-        varStrCount++;
+    {
+        stringList.emplace_back();
+        v.offset = stringList.size() - 1;
     }
     else
     {
@@ -226,4 +226,17 @@ std::shared_ptr<std::string> SymbolTable::requestRegister()
         }
     }
     yyerror("Depleted register pool");
+}
+
+void SymbolTable::changeVarOffset(std::string id, int offset)
+{
+    for (auto curLayer = stack.rbegin(); curLayer != stack.rend(); curLayer++)
+    {
+        auto found = curLayer->variables.find(id);
+        if(found != curLayer->variables.end())
+        {
+            found->second.offset = offset;
+            return;
+        }
+    }
 }

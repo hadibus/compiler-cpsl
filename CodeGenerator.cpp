@@ -12,8 +12,6 @@
 
 extern void yyerror(const char*);
 
-const unsigned STRING_VAR_SIZE = 64;
-
     void tellMeTheType(Type*t)
     {
         if(dynamic_cast<ArrayType*>(t))
@@ -121,21 +119,38 @@ const unsigned STRING_VAR_SIZE = 64;
             }
         }
         else
+        if (auto le = dynamic_cast<LvalExpression*>(e))
+        {
+            if (le->getType() == st.getPrimitiveType("string"))
+            {
+                std::cout
+                << "\tla $a0, STR" << le->getOffset() << std::endl
+                << "\tli $v0, 4" << std::endl
+                << "\tsyscall" << std::endl;
+            }
+            else
+            {
+                throw std::logic_error("A non-string lvalue was caught in write.");
+            }
+        }
+        else
         if (auto re = dynamic_cast<RegisterExpression*>(e))
         {
-            std::cout << "\tla $a0, (" << *re->getRegister() << ")" << std::endl;
 
             if (re->getType() == st.getPrimitiveType("string"))
             {
-                std::cout << "\tli $v0, 4" << std::endl;
+                std::cout 
+                << "\tli $v0, 4" << std::endl;
             }
             else if (re->getType() == st.getPrimitiveType("character"))
             {
+                std::cout << "\tla $a0, (" << *re->getRegister() << ")" << std::endl;
                 std::cout << "\tli $v0, 11" << std::endl;
             }
             else if (re->getType() == st.getPrimitiveType("integer")
                   || re->getType() == st.getPrimitiveType("boolean"))
             {
+                std::cout << "\tla $a0, (" << *re->getRegister() << ")" << std::endl;
                 std::cout << "\tli $v0, 1" << std::endl;
             }
             else
@@ -176,11 +191,6 @@ const unsigned STRING_VAR_SIZE = 64;
         for (auto i = 0U; i < sl.size(); i++)
         {
             std::cout << "STR" << i << ": " << sl[i] << std::endl;
-        }
-        auto vsc = st.getVarStrCount();
-        for (auto i = 0U; i < vsc; i++)
-        {
-            std::cout << "VAR_STR" << i << ": .space " << STRING_VAR_SIZE << std::endl;
         }
         std::cout << "GA: .align 2" << std::endl;
     }
@@ -297,6 +307,7 @@ const unsigned STRING_VAR_SIZE = 64;
             le->setRegister(std::make_shared<std::string>(v.reg));
             le->setOffset(v.offset);
             le->setType(v.type);
+            stringIdTemp = lval;
             expressions.push_back(le);
             return expressions.size() - 1;
         }
@@ -456,12 +467,8 @@ const unsigned STRING_VAR_SIZE = 64;
             auto reg = st.requestRegister();
             if (fe->getType() == st.getPrimitiveType("string"))
             {
-                auto reg2 = st.requestRegister();
-                std::cout 
-                << "\tla " << *reg << ", STR" << fe->getValue() << std::endl
-                << "\tla " << *reg2 << ", VAR_STR" << lvale->getOffset() << std::endl
-                << "\tsw " << *reg << ", 0(" << *reg2 << ")" << std::endl;
-                //TODO: get string assignment working
+                st.changeVarOffset(stringIdTemp, fe->getValue());
+                lvale->setOffset(fe->getValue());
             }
             else
             {
@@ -504,9 +511,13 @@ const unsigned STRING_VAR_SIZE = 64;
             yyerror("lval not modifiable");
         }
 
+        if (le->getType() == st.getPrimitiveType("string"))
+        {
+            yyerror("Can't read into a string");
+        }
+
         /*
         read int 5
-        read string 8
         read character 12
         */
         if (le->getType() == st.getPrimitiveType("integer")
@@ -524,14 +535,6 @@ const unsigned STRING_VAR_SIZE = 64;
             << "\tsyscall" << std::endl
             << "\tsw $v0, " << le->getOffset() << "(" << *le->getRegister() << ")" 
             << std::endl;
-        }
-        else if (le->getType() == st.getPrimitiveType("string"))
-        {
-            std::cout
-            << "\tla $a0, VAR_STR" << le->getOffset() << std::endl
-            << "\tli $a1, " << STRING_VAR_SIZE << std::endl
-            << "\tli $v0, 8" << std::endl
-            << "\tsyscall" << std::endl;
         }
         else
         {
@@ -563,11 +566,7 @@ const unsigned STRING_VAR_SIZE = 64;
         }
         else
         {
-            auto reg = std::make_shared<std::string>("$a0");
-            std::cout
-            << "\tla " << *reg << ", VAR_STR" << le->getOffset() << std::endl;
-            
-            regExpr->setRegister(reg);
+            throw std::logic_error("loadReg got a string lval.");
         }
         
         regExpr->setType(le->getType());
@@ -1242,6 +1241,10 @@ const unsigned STRING_VAR_SIZE = 64;
 
     int CodeGenerator::unOp(int i, int (CodeGenerator::*cb)(int))
     {
+        if (expressions[i]->getType() == st.getPrimitiveType("string"))
+        {
+            return (this->*cb)(i); //let pass through
+        }
         if (auto e = dynamic_cast<LvalExpression*>(expressions[i]))
         {
             i = loadReg(e);
