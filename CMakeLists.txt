@@ -16,6 +16,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 include_directories(${PROJECT_SOURCE_DIR})
 
 set(cpsl_srcs
+  Frame.cpp
   SymbolTable.cpp
   CodeGenerator.cpp
   main.cpp

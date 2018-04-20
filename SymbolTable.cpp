@@ -20,7 +20,6 @@ void SymbolTable::initialize()
     primitiveTypes.push_back(new BooleanType);
     primitiveTypes.push_back(new StringType);
 
-    enterScope();
     storeType("integer", primitiveTypes[INT_TYPE]);
     storeType("INTEGER", primitiveTypes[INT_TYPE]);
     storeType("char", primitiveTypes[CHAR_TYPE]);
@@ -34,113 +33,138 @@ void SymbolTable::initialize()
     storeConst("TRUE", primitiveTypes[BOOL_TYPE], 1);
     storeConst("false", primitiveTypes[BOOL_TYPE], 0);
     storeConst("FALSE", primitiveTypes[BOOL_TYPE], 0);
-
-    enterScope();
-    pushFrameOffset();
-
-    const int NUM_T_REGS = 10; // 0-9
-    for(auto i = 0; i < NUM_T_REGS; i++)
-    {
-        regPool.push_back(std::make_shared<std::string>("$t" + std::to_string(i)));
-    }
-
-    const int NUM_S_REGS = 8; // 0-7
-    for(auto i = 0; i < NUM_S_REGS; i++)
-    {
-        regPool.push_back(std::make_shared<std::string>("$s" + std::to_string(i)));
-    }
 }
 
 Constant SymbolTable::lookupConst(std::string id)
 {
-    for (auto curLayer = stack.rbegin(); curLayer != stack.rend(); curLayer++)
+    auto lookItUp = [](const Frame &f, const std::string &id)
     {
-        auto found = curLayer->constants.find(id);
-        if(found != curLayer->constants.end())
-        {
-            return found->second;
-        }
+        const auto found = f.constants.find(id);
+        if (found != f.constants.end()) return found->second;
+        return Constant();
+    };
+
+    if (!stack.empty())
+    {
+
+        auto v = lookItUp(*stack.rbegin(), id);
+        if (v.type != nullptr) return v;
     }
-    return {};
+
+    return lookItUp(globalFrame, id);
 }
 
 Variable SymbolTable::lookupVar(std::string id)
 {
-    for (auto curLayer = stack.rbegin(); curLayer != stack.rend(); curLayer++)
+    auto lookItUp = [](const Frame &f, const std::string &id)
     {
-        auto found = curLayer->variables.find(id);
-        if(found != curLayer->variables.end())
+        for (auto i = f.forVars.rbegin(); i != f.forVars.rend(); i++)
+        {
+            if (i->first == id)
+            {
+                return i->second;
+            }
+        }
+        const auto found = f.variables.find(id);
+        if (found != f.variables.end())
         {
             return found->second;
         }
+        return Variable();
+    };
+
+    if (!stack.empty())
+    {
+        auto v = lookItUp(*stack.rbegin(), id);
+        if (v.reg != "") return v;
     }
-    return {};
+    return lookItUp(globalFrame, id);
 }
 
 int SymbolTable::lookupType(std::string id)
 {
-    for (auto curLayer = stack.rbegin(); curLayer != stack.rend(); curLayer++)
+    auto lookItUp = [&](const Frame &f, const std::string &id)
     {
-        auto found = curLayer->types.find(id);
-        if(found != curLayer->types.end())
+        auto found = f.types.find(id);
+        if(found != f.types.end())
         {
-            auto foundInIneff = std::find(
+            auto foundInEneff = std::find(
                 ineffableTypes.begin(),
                 ineffableTypes.end(),
-                found->second);
-            if (foundInIneff != ineffableTypes.end())
+                found->second
+            );
+            if(foundInEneff != ineffableTypes.end())
             {
-                return foundInIneff - ineffableTypes.begin();
+                return static_cast<int>(foundInEneff - ineffableTypes.begin());
             }
-            
+
             for (auto idx = 0U; idx < primitiveTypes.size(); idx++)
             {
                 if (primitiveTypes[idx] == found->second)
                 {
                     ineffableTypes.push_back(primitiveTypes[idx]);
-                    return ineffableTypes.size() - 1;
+                    return static_cast<int>(ineffableTypes.size() - 1);
                 }
             }
-            
-
         }
-    }
-    throw std::runtime_error("Type " + id + " not defined");
+        return -1;
+    };
+
+    int ret = -1;
+    if (!stack.empty()) ret = lookItUp(stack.back(),id);
+    if (ret == -1) ret = lookItUp(globalFrame,id);
+    if (ret == -1) throw std::runtime_error("Type " + id + " not defined0");
+    return ret;
 }
 
 Type * SymbolTable::getType(std::string id)
 {
-    for (auto curLayer = stack.rbegin(); curLayer != stack.rend(); curLayer++)
+    if(!stack.empty())
     {
-        auto found = curLayer->types.find(id);
-        if(found != curLayer->types.end())
+        auto found = stack.back().types.find(id);
+        if (found != stack.back().types.end())
         {
             return found->second;
         }
+    }
+    auto found = globalFrame.types.find(id);
+    if (found != globalFrame.types.end())
+    {
+        return found->second;
     }
     throw std::runtime_error("Type " + id + " not defined");
 }
 
 void SymbolTable::storeType(std::string id, Type* t)
 {
-    auto topLayer = stack.rbegin();
-    topLayer->types[id] = t;
+    if (stack.empty())
+    {
+        globalFrame.types[id] = t;
+    }
+    else
+    {
+        stack.back().types[id] = t;
+    }
+
 }
 
 void SymbolTable::storeConst(std::string id, Type* t, int val)
 {
     checkForIdDefined(id);
-    auto topLayer = stack.rbegin();
+    std::map<std::string,Constant> * topLayer = &globalFrame.constants;
+    if (!stack.empty()) topLayer = &(stack.back().constants);
     Constant c;
     c.type = t;
     c.value = val;
-    topLayer->constants[id] = c;
+    (*topLayer)[id] = c;
 }
 
-void SymbolTable::storeVar(std::string id, Type* t, std::string reg, bool onStack)
+void SymbolTable::storeVar(std::string id, Type* t, std::string reg)
 {
     checkForIdDefined(id);
-    auto topLayer = stack.rbegin();
+    Frame &f = globalFrame;
+    if (!stack.empty()) f = stack.back();
+   
     Variable v;
     if (t == getPrimitiveType("string"))
     {
@@ -149,25 +173,28 @@ void SymbolTable::storeVar(std::string id, Type* t, std::string reg, bool onStac
     }
     else
     {
-        if (onStack)
+        if (!stack.empty())
         {
-            frameOffsets.back() -= t->getSizeRecursive();
-            v.offset = frameOffsets.back();
+            stack.back().offset -= t->getSizeRecursive();
+            v.offset = stack.back().offset;
         }
         else
         {
-            v.offset = offset;
-            offset += t->getSizeRecursive();
+            v.offset = globalFrame.offset;
+            globalFrame.offset += t->getSizeRecursive();
         }
     }
     v.reg = reg;
     v.type = t;
-    topLayer->variables[id] = v;
+    f.variables[id] = v;
+    
+
+    
 }
 
 void SymbolTable::changeFrameOffsetBy(int i)
 {
-    frameOffsets.back() += i;
+    stack.back().offset += i;
 }
 
 int SymbolTable::storeStringLiteral(std::string s)
@@ -179,15 +206,19 @@ int SymbolTable::storeStringLiteral(std::string s)
 
 void SymbolTable::checkForIdDefined(std::string id)
 {
-    auto topLayer = stack.rbegin();
-    if(topLayer->constants.find(id) != topLayer->constants.end())
+    auto checky = [&](const Frame &f)
     {
-        throw std::runtime_error("Constant " + id + " is already defined in this scope");
-    }
-    if(topLayer->variables.find(id) != topLayer->variables.end())
-    {
-        throw std::runtime_error("Variable " + id + " is already defined in this scope");
-    }
+        if(f.constants.find(id) != f.constants.end())
+        {
+            throw std::runtime_error("Constant " + id + " is already defined in this scope");
+        }
+        if(f.variables.find(id) != f.variables.end())
+        {
+            throw std::runtime_error("Variable " + id + " is already defined in this scope");
+        }
+    };
+    if(!stack.empty()) checky(stack.back());
+    checky(globalFrame);
 }
 
 void SymbolTable::enterScope()
@@ -232,7 +263,9 @@ std::vector<std::string> SymbolTable::getStringList()
 
 std::shared_ptr<std::string> SymbolTable::requestRegister()
 {
-    for (auto & reg : regPool)
+    std::vector<std::shared_ptr<std::string>> *regPool = &(globalFrame.regPool);
+    if (!stack.empty()) regPool = &(stack.back().regPool);
+    for (auto & reg : *regPool)
     {
         if(reg.unique())
         {
@@ -253,14 +286,4 @@ void SymbolTable::changeVarOffset(std::string id, int offset)
             return;
         }
     }
-}
-
-void SymbolTable::pushFrameOffset()
-{
-    frameOffsets.push_back(0);
-}
-
-void SymbolTable::popFrameOffset()
-{
-    frameOffsets.pop_back();
 }

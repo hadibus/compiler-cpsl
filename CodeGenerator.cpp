@@ -1559,7 +1559,7 @@ extern void yyerror(const char*);
         if (v.type == nullptr)
         {
             const auto t = expressions[exNum]->getType();
-            st.storeVar(id, t, "$fp", true);
+            st.storeVar(id, t, "$fp");
             forNewVar.push_back(true);
             std::cout
             << "\taddi $sp, $sp, -4" << std::endl;
