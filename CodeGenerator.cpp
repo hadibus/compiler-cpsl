@@ -178,7 +178,8 @@ extern void yyerror(const char*);
 	    << "\tla $gp, GA" << std::endl
 	    << "\tj real_main" << std::endl
         << std::endl
-        << "real_main:" << std::endl;
+        << "real_main:" << std::endl
+        << "\tmove $fp, $sp" << std::endl;
     }
 
     void CodeGenerator::printFooter()
@@ -1557,7 +1558,14 @@ extern void yyerror(const char*);
         auto v = st.lookupVar(id);
         if (v.type == nullptr)
         {
-            st.storeVar(id, expressions[exNum]->getType(), "$gp");
+            const auto t = expressions[exNum]->getType();
+            st.storeVar(id, t, "$fp", true);
+            forNewVar.push_back(true);
+            std::cout
+            << "\taddi $sp, $sp, -4" << std::endl;
+        }
+        else{
+            forNewVar.push_back(false);
         }
         static unsigned num = 0U;
 
@@ -1625,6 +1633,13 @@ extern void yyerror(const char*);
         << "\tsw " << *reg << ", " << expr->getOffset() << "(" << *expr->getRegister() << ")" << std::endl
         << "\tj FOR_BEGIN" << forStack.back() << std::endl
         << "FOR_END" << forStack.back() << ":" << std::endl;
+        if(forNewVar.back())
+        {
+            std::cout
+            << "\taddi $sp, $sp, 4" << std::endl;
+            st.changeFrameOffsetBy(4);
+        }
+        forNewVar.pop_back();
 
         forAscendStack.pop_back();
         forStack.pop_back();

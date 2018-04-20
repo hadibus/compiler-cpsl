@@ -19,7 +19,7 @@ struct SymbolTableLayer
 class SymbolTable
 { 
 public:
-    SymbolTable(): declTypes(), stack(), primitiveTypes(), ineffableTypes(), stringList(), regPool(), offset(0U){};
+    SymbolTable(): declTypes(), stack(), primitiveTypes(), ineffableTypes(), stringList(), regPool(), offset(0U), frameOffsets(){};
     void initialize();
     Constant lookupConst(std::string);
     Variable lookupVar(std::string);
@@ -27,7 +27,8 @@ public:
     Type * getType(std::string);
     void storeType(std::string, Type*);
     void storeConst(std::string, Type*, int);
-    void storeVar(std::string, Type*, std::string);
+    void storeVar(std::string, Type*, std::string, bool onStack = false);
+    void storeVarStack(std::string, Type*);
     int storeStringLiteral(std::string);
     void checkForIdDefined(std::string);
     void enterScope();
@@ -39,6 +40,9 @@ public:
     Type* getIneffableType(int);
     std::vector<std::string> getStringList();
     void changeVarOffset(std::string, int);
+    void pushFrameOffset();
+    void popFrameOffset();
+    void changeFrameOffsetBy(int);
 private:
     std::vector<Type *> declTypes;
     std::vector<SymbolTableLayer> stack;
@@ -46,6 +50,7 @@ private:
     std::vector<Type*> ineffableTypes;
     std::vector<std::string> stringList;
     std::vector<std::shared_ptr<std::string>> regPool;
+    std::vector<int> frameOffsets;
     unsigned offset;
 };
 #endif

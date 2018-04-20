@@ -6,11 +6,11 @@
 class LvalExpression : public RegisterExpression 
 {
 public:
-    LvalExpression() : RegisterExpression(), offset(0U){};
+    LvalExpression() : RegisterExpression(), offset(0){};
     void setOffset(int o){offset = o;};
-    unsigned getOffset(){return offset;};
+    int getOffset(){return offset;};
 private:
-    unsigned offset;
+    int offset;
 };
 
 #endif

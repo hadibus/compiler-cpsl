@@ -36,6 +36,7 @@ void SymbolTable::initialize()
     storeConst("FALSE", primitiveTypes[BOOL_TYPE], 0);
 
     enterScope();
+    pushFrameOffset();
 
     const int NUM_T_REGS = 10; // 0-9
     for(auto i = 0; i < NUM_T_REGS; i++)
@@ -136,7 +137,7 @@ void SymbolTable::storeConst(std::string id, Type* t, int val)
     topLayer->constants[id] = c;
 }
 
-void SymbolTable::storeVar(std::string id, Type* t, std::string reg)
+void SymbolTable::storeVar(std::string id, Type* t, std::string reg, bool onStack)
 {
     checkForIdDefined(id);
     auto topLayer = stack.rbegin();
@@ -148,12 +149,25 @@ void SymbolTable::storeVar(std::string id, Type* t, std::string reg)
     }
     else
     {
-        v.offset = offset;
-        offset += t->getSizeRecursive();
+        if (onStack)
+        {
+            frameOffsets.back() -= t->getSizeRecursive();
+            v.offset = frameOffsets.back();
+        }
+        else
+        {
+            v.offset = offset;
+            offset += t->getSizeRecursive();
+        }
     }
     v.reg = reg;
     v.type = t;
     topLayer->variables[id] = v;
+}
+
+void SymbolTable::changeFrameOffsetBy(int i)
+{
+    frameOffsets.back() += i;
 }
 
 int SymbolTable::storeStringLiteral(std::string s)
@@ -239,4 +253,14 @@ void SymbolTable::changeVarOffset(std::string id, int offset)
             return;
         }
     }
+}
+
+void SymbolTable::pushFrameOffset()
+{
+    frameOffsets.push_back(0);
+}
+
+void SymbolTable::popFrameOffset()
+{
+    frameOffsets.pop_back();
 }

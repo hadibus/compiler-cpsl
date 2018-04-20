@@ -7,9 +7,9 @@
 
 struct Variable
 {
-    Variable() : type(nullptr), offset(0U), reg(){};
+    Variable() : type(nullptr), offset(0), reg(){};
     Type * type;
-    unsigned offset;
+    int offset;
     std::string reg;
 };
 

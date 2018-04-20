@@ -109,6 +109,7 @@ private:
     std::vector<int> forStack;
     std::vector<bool> forAscendStack;
     std::string stringIdTemp;
+    std::vector<bool> forNewVar;
 
 };
 
