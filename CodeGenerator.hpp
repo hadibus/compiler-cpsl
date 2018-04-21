@@ -98,7 +98,7 @@ public:
     int getLvalRec(int,char*);
 
     int buildArray(int,int,int);
-
+    void markGlobalsDone();
 private:
     SymbolTable st;
     std::vector<Expression*> expressions;

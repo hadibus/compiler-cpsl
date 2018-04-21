@@ -6,7 +6,8 @@
 class SymbolTable
 { 
 public:
-    SymbolTable(): stack(), globalFrame(), primitiveTypes(), stringList(), ineffableTypes(){};
+    SymbolTable(): stack(), primitiveTypes(), stringList(),
+        ineffableTypes(), globalVarsDone(false){};
     void initialize();
     Constant lookupConst(std::string);
     Variable lookupVar(std::string);
@@ -14,7 +15,7 @@ public:
     Type * getType(std::string);
     void storeType(std::string, Type*);
     void storeConst(std::string, Type*, int);
-    void storeVar(std::string, Type*, std::string);
+    void storeVar(std::string, Type*);
     void storeVarStack(std::string, Type*);
     int storeStringLiteral(std::string);
     void checkForIdDefined(std::string);
@@ -28,11 +29,12 @@ public:
     std::vector<std::string> getStringList();
     void changeVarOffset(std::string, int);
     void changeFrameOffsetBy(int);
+    void markGlobalsDone(){globalVarsDone = true;}
 private:
     std::vector<Frame> stack;
-    Frame globalFrame;
     std::vector<Type*> primitiveTypes;
     std::vector<std::string> stringList;
     std::vector<Type*> ineffableTypes;
+    bool globalVarsDone;
 };
 #endif

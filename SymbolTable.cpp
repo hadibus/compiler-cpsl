@@ -10,7 +10,7 @@
 
 extern void yyerror(const char*);
 
-
+unsigned const GLOBAL_PLACE = 0;
 unsigned const INT_TYPE = 0, CHAR_TYPE = 1, BOOL_TYPE = 2, STR_TYPE = 3;
 
 void SymbolTable::initialize()
@@ -20,6 +20,7 @@ void SymbolTable::initialize()
     primitiveTypes.push_back(new BooleanType);
     primitiveTypes.push_back(new StringType);
 
+    enterScope();
     storeType("integer", primitiveTypes[INT_TYPE]);
     storeType("INTEGER", primitiveTypes[INT_TYPE]);
     storeType("char", primitiveTypes[CHAR_TYPE]);
@@ -44,14 +45,10 @@ Constant SymbolTable::lookupConst(std::string id)
         return Constant();
     };
 
-    if (!stack.empty())
-    {
+    auto v = lookItUp(stack.back(), id);
+    if (v.type != nullptr) return v;
 
-        auto v = lookItUp(*stack.rbegin(), id);
-        if (v.type != nullptr) return v;
-    }
-
-    return lookItUp(globalFrame, id);
+    return lookItUp(stack[GLOBAL_PLACE], id);
 }
 
 Variable SymbolTable::lookupVar(std::string id)
@@ -73,16 +70,14 @@ Variable SymbolTable::lookupVar(std::string id)
         return Variable();
     };
 
-    if (!stack.empty())
-    {
-        auto v = lookItUp(*stack.rbegin(), id);
-        if (v.reg != "") return v;
-    }
-    return lookItUp(globalFrame, id);
-}
+    auto v = lookItUp(*stack.rbegin(), id);
+    if (v.reg != "") return v;
+    return lookItUp(stack[GLOBAL_PLACE], id);
+};
 
 int SymbolTable::lookupType(std::string id)
 {
+    int ret = -1;
     auto lookItUp = [&](const Frame &f, const std::string &id)
     {
         auto found = f.types.find(id);
@@ -110,9 +105,8 @@ int SymbolTable::lookupType(std::string id)
         return -1;
     };
 
-    int ret = -1;
     if (!stack.empty()) ret = lookItUp(stack.back(),id);
-    if (ret == -1) ret = lookItUp(globalFrame,id);
+    if (ret == -1) ret = lookItUp(stack[GLOBAL_PLACE],id);
     if (ret == -1) throw std::runtime_error("Type " + id + " not defined0");
     return ret;
 }
@@ -127,8 +121,8 @@ Type * SymbolTable::getType(std::string id)
             return found->second;
         }
     }
-    auto found = globalFrame.types.find(id);
-    if (found != globalFrame.types.end())
+    auto found = stack[GLOBAL_PLACE].types.find(id);
+    if (found != stack[GLOBAL_PLACE].types.end())
     {
         return found->second;
     }
@@ -137,21 +131,13 @@ Type * SymbolTable::getType(std::string id)
 
 void SymbolTable::storeType(std::string id, Type* t)
 {
-    if (stack.empty())
-    {
-        globalFrame.types[id] = t;
-    }
-    else
-    {
-        stack.back().types[id] = t;
-    }
-
+        stack.back().types[id] = t; //will be global when needed
 }
 
 void SymbolTable::storeConst(std::string id, Type* t, int val)
 {
     checkForIdDefined(id);
-    std::map<std::string,Constant> * topLayer = &globalFrame.constants;
+    std::map<std::string,Constant> * topLayer = &stack[GLOBAL_PLACE].constants;
     if (!stack.empty()) topLayer = &(stack.back().constants);
     Constant c;
     c.type = t;
@@ -159,10 +145,10 @@ void SymbolTable::storeConst(std::string id, Type* t, int val)
     (*topLayer)[id] = c;
 }
 
-void SymbolTable::storeVar(std::string id, Type* t, std::string reg)
+void SymbolTable::storeVar(std::string id, Type* t)
 {
     checkForIdDefined(id);
-    Frame &f = globalFrame;
+    Frame &f = stack[GLOBAL_PLACE];
     if (!stack.empty()) f = stack.back();
    
     Variable v;

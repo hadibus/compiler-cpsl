@@ -134,8 +134,9 @@ CodeGenerator cg;
 Program : ProgramHead Block DOTSY {}
 				;
 
-ProgramHead : OptConstDecls OptTypeDecls OptVarDecls PFDecls
+ProgramHead : OptConstDecls OptTypeDecls OptVarDecls PFDecls {cg.markGlobalsDone();}
             ;
+
 OptConstDecls : CONSTSY ConstDecls
 	      |
 	      ;

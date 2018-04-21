@@ -245,7 +245,7 @@ extern void yyerror(const char*);
 
         for (const auto & name : tempStrList[l])
         {
-            st.storeVar(name, type, reg);
+            st.storeVar(name, type);
         }
         //tempStrList[l].clear();
     }
@@ -1559,7 +1559,7 @@ extern void yyerror(const char*);
         if (v.type == nullptr)
         {
             const auto t = expressions[exNum]->getType();
-            st.storeVar(id, t, "$fp");
+            st.storeVar(id, t);
             forNewVar.push_back(true);
             std::cout
             << "\taddi $sp, $sp, -4" << std::endl;
@@ -1644,4 +1644,9 @@ extern void yyerror(const char*);
         forAscendStack.pop_back();
         forStack.pop_back();
         st.leaveScope();
+    }
+
+    void CodeGenerator::markGlobalsDone()
+    {
+        st.markGlobalsDone();
     }
