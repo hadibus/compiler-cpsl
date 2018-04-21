@@ -7,6 +7,7 @@
 
 #include "Constant.hpp"
 #include "Variable.hpp"
+#include "Function.hpp"
 
 struct SymbolTableLayer
 {
@@ -19,7 +20,7 @@ struct SymbolTableLayer
 class SymbolTable
 { 
 public:
-    SymbolTable(): declTypes(), stack(), primitiveTypes(), ineffableTypes(), stringList(), regPool(), offset(0U), frameOffsets(){};
+    SymbolTable(): declTypes(), stack(), primitiveTypes(), ineffableTypes(), stringList(), regPool(), frameOffsets(), functions(), inFunction(false), offset(0){};
     void initialize();
     Constant lookupConst(std::string);
     Variable lookupVar(std::string);
@@ -43,6 +44,7 @@ public:
     void pushFrameOffset();
     void popFrameOffset();
     void changeFrameOffsetBy(int);
+    void setInFunction(bool in){inFunction = in;}
 private:
     std::vector<Type *> declTypes;
     std::vector<SymbolTableLayer> stack;
@@ -51,6 +53,8 @@ private:
     std::vector<std::string> stringList;
     std::vector<std::shared_ptr<std::string>> regPool;
     std::vector<int> frameOffsets;
+    std::map<std::string, Function> functions;
+    bool inFunction;
     unsigned offset;
 };
 #endif

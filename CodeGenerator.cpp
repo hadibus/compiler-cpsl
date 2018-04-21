@@ -177,7 +177,12 @@ extern void yyerror(const char*);
         << "main:" << std::endl
 	    << "\tla $gp, GA" << std::endl
 	    << "\tj real_main" << std::endl
-        << std::endl
+        << std::endl;
+    }
+
+    void CodeGenerator::printTopMain()
+    {
+        std::cout
         << "real_main:" << std::endl
         << "\tmove $fp, $sp" << std::endl;
     }
@@ -1644,4 +1649,23 @@ extern void yyerror(const char*);
         forAscendStack.pop_back();
         forStack.pop_back();
         st.leaveScope();
+    }
+
+    void CodeGenerator::startProcedure(std::string name)
+    {
+        std::cout
+        << name << "_p:" << std::endl;
+    }
+
+    void CodeGenerator::endProcedure()
+    {
+        std::cout
+        << "\tjr $ra" << std::endl
+        << std::endl;
+    }
+
+    void CodeGenerator::precallProcedure(std::string name)
+    {
+        std::cout
+        << "\tjal " << name << "_p" << std::endl;
     }

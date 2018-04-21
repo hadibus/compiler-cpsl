@@ -147,17 +147,23 @@ ConstDecls : ConstDecls ConstDecl
 ConstDecl : IDENTSY EQSY Expression SCOLONSY {cg.storeConst($1,$3);}
 	  ;
 
-PFDecls : PFDecls ProcedureDecl
-        | PFDecls FunctionDecl
+PFDecls : PFDecls2 {cg.printTopMain();}
+        ;
+
+PFDecls2 : PFDecls2 ProcedureDecl
+        | PFDecls2 FunctionDecl
         |
         ;
 
 ProcedureDecl : PSignature SCOLONSY FORWARDSY SCOLONSY {}
-              | PSignature SCOLONSY Body SCOLONSY {}
+              | PSignature SCOLONSY Body SCOLONSY {cg.endProcedure();}
 	      ;
 
-PSignature : PROCEDURESY IDENTSY LPARENSY OptFormalParameters RPARENSY {}
+PSignature : ProcedureTop LPARENSY OptFormalParameters RPARENSY {}
            ;
+
+ProcedureTop : PROCEDURESY IDENTSY {cg.startProcedure($2);}
+             ;
 
 FunctionDecl : FSignature SCOLONSY FORWARDSY SCOLONSY {}
 	     | FSignature SCOLONSY Body SCOLONSY {}
@@ -326,7 +332,7 @@ WriteArgs : WriteArgs COMMASY Expression {cg.unOp($3,&CodeGenerator::writeExpres
           | Expression                   {cg.unOp($1,&CodeGenerator::writeExpression);}
           ;
 
-ProcedureCall : IDENTSY LPARENSY OptArguments RPARENSY {}
+ProcedureCall : IDENTSY LPARENSY OptArguments RPARENSY {cg.precallProcedure($1);}
               ;
 OptArguments : Arguments {}
              |           {}

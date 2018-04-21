@@ -99,6 +99,12 @@ public:
 
     int buildArray(int,int,int);
 
+    void startProcedure(std::string);
+    void endProcedure();
+    void precallProcedure(std::string);
+
+    void printTopMain();
+
 private:
     SymbolTable st;
     std::vector<Expression*> expressions;
