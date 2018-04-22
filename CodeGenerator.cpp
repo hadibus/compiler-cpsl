@@ -255,6 +255,21 @@ extern void yyerror(const char*);
         //tempStrList[l].clear();
     }
 
+    void CodeGenerator::moveStackPtrPastParameters()
+    {
+        std::cout
+        << "\taddi $sp, $sp, " << st.getFuncParamSize() << std::endl;
+    }
+
+    void CodeGenerator::makeParameters(int i, int t)
+    {
+        auto type = st.getIneffableType(t);
+        for (const auto & name : tempStrList[i])
+        {
+            st.storeParam(name, type);
+        }
+    }
+
     int CodeGenerator::makeRecordVars(int l,int r)
     {
         auto type = st.getIneffableType(r);
@@ -1651,17 +1666,18 @@ extern void yyerror(const char*);
         st.leaveScope();
     }
 
-    void CodeGenerator::startProcedure(std::string name)
+    void CodeGenerator::doProcedurePrologue(std::string name)
     {
         std::cout
         << name << "_p:" << std::endl;
     }
 
-    void CodeGenerator::endProcedure()
+    void CodeGenerator::doProcedureEpilogue()
     {
         std::cout
         << "\tjr $ra" << std::endl
         << std::endl;
+        st.endFunction();
     }
 
     void CodeGenerator::precallProcedure(std::string name)
@@ -1669,3 +1685,80 @@ extern void yyerror(const char*);
         std::cout
         << "\tjal " << name << "_p" << std::endl;
     }
+
+    void CodeGenerator::doFunctionPrologue(std::string name)
+    {
+        std::cout
+        << name << "_f:" << std::endl;
+    }
+
+    void CodeGenerator::doFunctionEpilogue()
+    {
+        std::cout
+        << "\tjr $ra" << std::endl
+        << std::endl;
+        st.endFunction();
+    }
+
+    void CodeGenerator::precallFunction(std::string name)
+    {
+
+        const auto size = st.getFuncParamSize(name);
+        auto funk = st.getFunction(name);
+
+        std::cout //In case of for loops making vars on stack
+        << "\tsw $fp, -4($sp)" << std::endl
+        << "\taddi $sp, $sp, -4" << std::endl
+        << "\tmove $fp, $sp" << std::endl; 
+
+        spillRegisters();
+
+        std::cout
+        << "\taddi $sp, $sp, -" << size << std::endl;
+
+        //assign args to params.
+        if(functionArgumentIdxs.size() != funk->paramNames.size())
+        {
+            yyerror("invalid number of arguments");
+        }
+
+        for (auto i = 0; i < funk->paramNames.size(); i++)
+        {
+            //assignExprToLval(funk->parameters[funk->paramNames[i]], );
+            ;
+        }
+
+
+        std::cout
+        << "\tjal " << name << "_f" << std::endl;
+    }
+
+    void CodeGenerator::spillRegisters()
+    {
+        functionOffset = -4;
+        std::cout << "#spilling registers..." << std::endl;
+        std::cout << "\tsw $ra, -4($fp)" << std::endl;
+        std::cout << "\tsw $t0, -8($fp)" << std::endl;
+        std::cout << "\tsw $t1, -12($fp)" << std::endl;
+        std::cout << "\tsw $t2, -16($fp)" << std::endl;
+        std::cout << "\tsw $t3, -20($fp)" << std::endl;
+        std::cout << "\tsw $t4, -24($fp)" << std::endl;
+        std::cout << "\tsw $t5, -28($fp)" << std::endl;
+        std::cout << "\tsw $t6, -32($fp)" << std::endl;
+        std::cout << "\tsw $t7, -36($fp)" << std::endl;
+        std::cout << "\tsw $t8, -40($fp)" << std::endl;
+        std::cout << "\tsw $t9, -44($fp)" << std::endl;
+        //TRICKY: one space for the return value here at -48
+        std::cout << "\tsw $fp, -52($fp)" << std::endl;
+        std::cout << "\taddi $sp, $sp, -52" << std::endl;
+        std::cout << "\tmove $fp, $sp" << std::endl;
+
+        std::cout << "#done spilling registers." << std::endl;
+    }
+
+    void CodeGenerator::startFunction(std::string s)
+    {
+        st.makeFunction(s);
+    }
+
+    

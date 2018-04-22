@@ -165,6 +165,17 @@ void SymbolTable::storeVar(std::string id, Type* t, std::string reg, bool onStac
     topLayer->variables[id] = v;
 }
 
+void SymbolTable::storeParam(std::string id,Type* t)
+{
+    auto v = Variable();
+    v.reg = "$fp";
+    v.type = t;
+    v.offset = offset;
+    offset += t->getSizeRecursive();
+    currFunc->parameters[id] = v ;
+    currFunc->paramNames.push_back(id);
+}
+
 void SymbolTable::changeFrameOffsetBy(int i)
 {
     frameOffsets.back() += i;

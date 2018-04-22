@@ -20,7 +20,7 @@ struct SymbolTableLayer
 class SymbolTable
 { 
 public:
-    SymbolTable(): declTypes(), stack(), primitiveTypes(), ineffableTypes(), stringList(), regPool(), frameOffsets(), functions(), inFunction(false), offset(0){};
+    SymbolTable(): declTypes(), stack(), primitiveTypes(), ineffableTypes(), stringList(), regPool(), frameOffsets(), functions(), currFunc(nullptr), offset(0){};
     void initialize();
     Constant lookupConst(std::string);
     Variable lookupVar(std::string);
@@ -29,6 +29,7 @@ public:
     void storeType(std::string, Type*);
     void storeConst(std::string, Type*, int);
     void storeVar(std::string, Type*, std::string, bool onStack = false);
+    void storeParam(std::string,Type*);
     void storeVarStack(std::string, Type*);
     int storeStringLiteral(std::string);
     void checkForIdDefined(std::string);
@@ -44,7 +45,11 @@ public:
     void pushFrameOffset();
     void popFrameOffset();
     void changeFrameOffsetBy(int);
-    void setInFunction(bool in){inFunction = in;}
+    void makeFunction(std::string s){currFunc = &(functions[s] = Function());};
+    void endFunction(){currFunc = nullptr;};
+    int getFuncParamSize(std::string s){return functions[s].offset;};
+    int getFuncParamSize(){return currFunc->offset;};
+    Function* getFunction(std::string s){return &functions[s];};
 private:
     std::vector<Type *> declTypes;
     std::vector<SymbolTableLayer> stack;
@@ -54,7 +59,7 @@ private:
     std::vector<std::shared_ptr<std::string>> regPool;
     std::vector<int> frameOffsets;
     std::map<std::string, Function> functions;
-    bool inFunction;
+    Function * currFunc;
     unsigned offset;
 };
 #endif

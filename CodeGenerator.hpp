@@ -13,7 +13,7 @@ public:
 
     CodeGenerator() : st(), expressions(), tempStrList(), tempExprIdxs(),
         endifNumber(0), endifNumberStack(), forStack(), forAscendStack(),
-        stringIdTemp()
+        stringIdTemp(), functionOffset(0)
     {
         st.initialize();
         printHeader();
@@ -99,13 +99,23 @@ public:
 
     int buildArray(int,int,int);
 
-    void startProcedure(std::string);
-    void endProcedure();
+    void doProcedurePrologue(std::string);
+    void doProcedureEpilogue();
     void precallProcedure(std::string);
 
+    void doFunctionPrologue(std::string);
+    void doFunctionEpilogue();
+    void precallFunction(std::string);
+    void startFunction(std::string);
+
     void printTopMain();
+    void makeParameters(int, int);
+    void moveStackPtrPastParameters();
+
+    void addArgument(int i){functionArgumentIdxs.push_back(i);};
 
 private:
+    void spillRegisters();
     SymbolTable st;
     std::vector<Expression*> expressions;
     std::vector<std::vector<std::string>> tempStrList;
@@ -116,6 +126,8 @@ private:
     std::vector<bool> forAscendStack;
     std::string stringIdTemp;
     std::vector<bool> forNewVar;
+    std::vector<int> functionArgumentIdxs;
+    int functionOffset;
 
 };
 

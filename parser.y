@@ -156,23 +156,25 @@ PFDecls2 : PFDecls2 ProcedureDecl
         ;
 
 ProcedureDecl : PSignature SCOLONSY FORWARDSY SCOLONSY {}
-              | PSignature SCOLONSY Body SCOLONSY {cg.endProcedure();}
+              | PSignature SCOLONSY Body SCOLONSY {cg.doProcedureEpilogue();}
 	      ;
 
 PSignature : ProcedureTop LPARENSY OptFormalParameters RPARENSY {}
            ;
 
-ProcedureTop : PROCEDURESY IDENTSY {cg.startProcedure($2);}
+ProcedureTop : PROCEDURESY IDENTSY {cg.doProcedurePrologue($2);}
              ;
 
 FunctionDecl : FSignature SCOLONSY FORWARDSY SCOLONSY {}
 	     | FSignature SCOLONSY Body SCOLONSY {}
              ;
 
-FSignature : FUNCTIONSY IDENTSY LPARENSY OptFormalParameters RPARENSY COLONSY Type {}
+FSignature : FunctionTop LPARENSY OptFormalParameters RPARENSY COLONSY Type {}
            ;
 
-OptFormalParameters : FormalParameters {}
+FunctionTop : FUNCTIONSY IDENTSY {cg.startFunction($2);}
+
+OptFormalParameters : FormalParameters {cg.moveStackPtrPastParameters();}
                     | {}
                     ;
 
@@ -180,7 +182,7 @@ FormalParameters : FormalParameters SCOLONSY FormalParameter {}
                  | FormalParameter {}
                  ;
 
-FormalParameter : OptVar IdentList COLONSY Type {}
+FormalParameter : OptVar IdentList COLONSY Type {cg.makeParameters($2,$4);}
                 ;
 
 OptVar : VARSY {}
@@ -337,8 +339,8 @@ ProcedureCall : IDENTSY LPARENSY OptArguments RPARENSY {cg.precallProcedure($1);
 OptArguments : Arguments {}
              |           {}
              ;
-Arguments : Arguments COMMASY Expression {}
-          | Expression                   {}
+Arguments : Arguments COMMASY Expression {cg.addArgument($3);}
+          | Expression                   {cg.addArgument($1);}
           ;
 
 Expression : CHARCONSTSY                         {$$ = cg.charLiteral(yylval.char_val);}
@@ -368,7 +370,7 @@ Expression : CHARCONSTSY                         {$$ = cg.charLiteral(yylval.cha
            | SUCCSY LPARENSY Expression RPARENSY {$$ = cg.unOp($3,&CodeGenerator::unOpIncr);}
            ;
 
-FunctionCall : IDENTSY LPARENSY OptArguments RPARENSY {}
+FunctionCall : IDENTSY LPARENSY OptArguments RPARENSY {cg.precallFunction($1);}
              ;
 
 LValue : LValue DOTSY IDENTSY {$$ = cg.getLvalRec($1,$3);}
