@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(syntax_analyzer)
+project(cpsl)
 
 find_package(BISON)
 find_package(FLEX)
@@ -13,14 +13,17 @@ set(EXTRA_COMPILE_FLAGS "-g3 -std=c++14")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_COMPILE_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 
-set(srcs
+include_directories(${PROJECT_SOURCE_DIR})
+
+set(cpsl_srcs
+  SymbolTable.cpp
+  CodeGenerator.cpp
   main.cpp
   ${BISON_Parser_OUTPUTS}
   ${FLEX_Scanner_OUTPUTS}
 )
-source_group("Syntax analyzer" FILES ${srcs})
+source_group("Calc" FILES ${cpsl_srcs})
 
-add_executable(syntax_analyzer ${srcs})
-
-target_link_libraries(syntax_analyzer  ${FLEX_LIBRARIES} ${BISON_LIBRARIES})
+add_executable(cpsl ${cpsl_srcs})
+target_link_libraries(cpsl ${FLEX_LIBRARIES} ${BISON_LIBRARIES})
 

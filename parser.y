@@ -1,275 +1,387 @@
 %{
 #include <iostream>
-extern int yylex();
-extern int yylineno;
+#include <fstream>
+
+#include "CodeGenerator.hpp"
 extern char * yytext;
+extern int yylineno;
+extern int yylex();
 void yyerror(const char*);
+CodeGenerator cg;
 %}
 
 %union
 {
-int val;
+  char * str_val;
+  int int_val;
+  char char_val;
 }
 
-%token KW_ARRAY
-%token KW_BEGIN
-%token KW_CHR
-%token KW_CONST
-%token KW_DO
-%token KW_DOWNTO
-%token KW_ELSE
-%token KW_ELSEIF
-%token KW_END
-%token KW_FOR
-%token KW_FORWARD
-%token KW_FUNCTION
-%token KW_IF
-%token KW_OF
-%token KW_ORD
-%token KW_PRED
-%token KW_PROCEDURE
-%token KW_READ
-%token KW_RECORD
-%token KW_REF
-%token KW_REPEAT
-%token KW_RETURN
-%token KW_STOP
-%token KW_SUCC
-%token KW_THEN
-%token KW_TO
-%token KW_TYPE
-%token KW_UNTIL
-%token KW_VAR
-%token KW_WHILE
-%token KW_WRITE
+%error-verbose
+%token ARRAYSY 
+%token ASSIGNSY 
+%token BEGINSY 
+%token CHARCONSTSY 
+%token CHRSY 
+%token COLONSY 
+%token COMMASY 
+%token CONSTSY 
+%token DIVSY 
+%token DOSY 
+%token DOTSY 
+%token DOWNTOSY 
+%token ELSEIFSY 
+%token ELSESY 
+%token ENDSY 
+%token EQSY 
+%token FORSY 
+%token FORWARDSY 
+%token FUNCTIONSY 
+%token GTESY 
+%token GTSY 
+%token IDENTSY
+%token IFSY 
+%token INTSY 
+%token LBRACKETSY 
+%token LPARENSY 
+%token LTESY 
+%token LTSY 
+%token MINUSSY 
+%token MODSY 
+%token MULTSY
+%token NOTSY 
+%token OFSY
+%token ORDSY 
+%token PLUSSY 
+%token PREDSY 
+%token PROCEDURESY 
+%token RBRACKETSY
+%token READSY 
+%token RECORDSY 
+%token REFSY 
+%token REPEATSY 
+%token RETURNSY 
+%token RPARENSY 
+%token SCOLONSY 
+%token STOPSY 
+%token STRINGSY 
+%token SUCCSY
+%token THENSY 
+%token TOSY 
+%token TYPESY 
+%token UNTILSY 
+%token VARSY 
+%token WHILESY 
+%token WRITESY
 
-%token ID
+%left ANDSY ORSY
+%right NOTSY
+%nonassoc EQSY LTESY GTESY GTSY LTSY NEQSY 
+%left PLUSSY MINUSSY 
+%left DIVSY MODSY MULTSY
+%right UMINUSSY 
 
-%left ADD
-%left SUB
-%left MULT
-%left DIV
-%left AND
-%left OR
-%right NOT
-%nonassoc EQ
-%nonassoc DIAM
-%nonassoc LT
-%nonassoc LEQ
-%nonassoc GT
-%nonassoc GEQ
-%token DOT
-%token COMMA
-%token COLON
-%token SCOLON
-%token LPAREN
-%token RPAREN
-%token LBRACK
-%token RBRACK
-%token ASSIGN
-%left MOD
-%token NUMBER
-
-
-%token CONST_CHAR
-%token CONST_STR
-%token COMMENT
-%token WHITESPACE
-%token NEWLINE
-
-%type <val> NUMBER
-%type <val> Expression
-%type <val> Expression2
-%type <val> Expression3
-%type <val> Expression4
-%type <val> Expression5
-%type <val> Expression6
-%type <val> Expression7
-%type <val> Expression8
-
-%start Program
+%type <char_val> CHARCONSTSY
+%type <int_val> Arguments 
+%type <int_val> ArrayType 
+%type <int_val> Assignment
+%type <int_val> Block 
+%type <int_val> Body  
+%type <int_val> ElseClause 
+%type <int_val> ElseIfHead 
+%type <int_val> ElseIfList 
+%type <int_val> Expression 
+%type <int_val> FSignature 
+%type <int_val> FieldDecl 
+%type <int_val> FieldDecls
+%type <int_val> ForHead 
+%type <int_val> ForStatement 
+%type <int_val> FormalParameter
+%type <int_val> FormalParameters  
+%type <int_val> FunctionCall 
+%type <int_val> INTSY 
+%type <int_val> IdentList 
+%type <int_val> OptVar 
+%type <int_val> IfHead 
+%type <int_val> IfStatement 
+%type <int_val> LValue 
+%type <int_val> OptArguments 
+%type <int_val> OptFormalParameters  
+%type <int_val> PSignature 
+%type <int_val> ProcedureCall
+%type <int_val> ReadArgs
+%type <int_val> ReadStatement 
+%type <int_val> RecordType 
+%type <int_val> RepeatStatement
+%type <int_val> RepeatSymbol 
+%type <int_val> ReturnStatement 
+%type <int_val> SimpleType 
+%type <int_val> Statement 
+%type <int_val> StatementList 
+%type <int_val> StopStatement 
+%type <int_val> ThenPart 
+%type <int_val> ToHead 
+%type <int_val> Type 
+%type <int_val> WhileHead 
+%type <int_val> WhileStatement 
+%type <int_val> WhileSymbol
+%type <int_val> WriteArgs 
+%type <int_val> WriteStatement  
+%type <str_val> IDENTSY 
+%type <str_val> STRINGSY 
 
 %%
-ArrayType : KW_ARRAY LBRACK Expression COLON Expression RBRACK KW_OF Type {};
-Assignment : LValue ASSIGN Expression {};
-Body : Block                               {}
-     | ConstantDecl Block                  {}
-     | TypeDecl Block                      {}
-     | ConstantDecl TypeDecl Block         {}
-     | VarDecl Block                       {}
-     | ConstantDecl VarDecl Block          {}
-     | TypeDecl VarDecl Block              {}
-     | ConstantDecl TypeDecl VarDecl Block {}
-     ;
-Block : KW_BEGIN StatementSeq KW_END {};
-ConstantDecl : KW_CONST ConstDeclItems {};
-ConstDeclItem : ID EQ Expression SCOLON {};
-ConstDeclItems : ConstDeclItems ConstDeclItem {}
-               | ConstDeclItem                {}
-               ;
-ElseifStuff : ElseifStuff ElseifThing {}
-            | ElseifThing             {}
+Program : ProgramHead Block DOTSY {}
+				;
+
+ProgramHead : OptConstDecls OptTypeDecls OptVarDecls PFDecls
             ;
-ElseifThing : KW_ELSEIF Expression KW_THEN StatementSeq {};
-ElseStuff : KW_ELSE StatementSeq {};
-ExpressionsList : ExpressionsList COMMA Expression {}
-                | Expression                       {}
-                ;
-Expression : Expression OR Expression2 {}
-           | Expression2               {}
+OptConstDecls : CONSTSY ConstDecls
+	      |
+	      ;
+
+ConstDecls : ConstDecls ConstDecl
+	   | ConstDecl
            ;
-Expression2 : Expression2 AND Expression3 {}
-            | Expression3                 {}
-            ;
-Expression3 : NOT Expression3 {}
-            | Expression4     {}
-            ;
-Expression4 : Expression4 EQ Expression5   {}
-            | Expression4 DIAM Expression5 {}
-            | Expression4 LT Expression5   {}
-            | Expression4 LEQ Expression5  {}
-            | Expression4 GT Expression5   {}
-            | Expression4 GEQ Expression5  {}
-            | Expression5                  {}
-            ;
-Expression5 : Expression5 ADD Expression6 {}
-            | Expression5 SUB Expression6 {}
-            | Expression6                 {}
-            ;
-Expression6 : Expression6 MULT Expression7 {}
-            | Expression6 DIV Expression7  {}
-            | Expression6 MOD Expression7  {}
-            | Expression7                  {}
-            ;
-Expression7 : SUB Expression7 {}
-            | Expression8     {}
-            ;
-Expression8 : LPAREN Expression RPAREN         {}
-            | NUMBER                           {}
-            | CONST_STR                        {}
-            | CONST_CHAR                       {}
-            | ID LPAREN RPAREN                 {}
-            | ID LPAREN ExpressionsList RPAREN {}
-            | KW_CHR LPAREN Expression RPAREN  {}
-            | KW_ORD LPAREN Expression RPAREN  {}
-            | KW_PRED LPAREN Expression RPAREN {}
-            | KW_SUCC LPAREN Expression RPAREN {}
-            | LValue                           {}
-            ;
-FormalParameter : IdList COLON Type        {}
-                | KW_VAR IdList COLON Type {}
-                | KW_REF IdList COLON Type {}
-                ;
-FormalParameters : FormalParameters SCOLON FormalParameter {}
-                 | FormalParameter                         {}
-                 ;
-ForStatement : KW_FOR ID ASSIGN Expression KW_TO Expression KW_DO StatementSeq KW_END     {}
-             | KW_FOR ID ASSIGN Expression KW_DOWNTO Expression KW_DO StatementSeq KW_END {}
-             ;
-FuncsAndProceds : FuncsAndProceds FuncOrProced {}
-                | FuncOrProced                 {}
-                ;
-FuncOrProced : FunctionDecl  {}
-             | ProcedureDecl {}
-             ;
-FunctionDecl : KW_FUNCTION ID LPAREN RPAREN COLON Type SCOLON KW_FORWARD SCOLON                  {}
-             | KW_FUNCTION ID LPAREN RPAREN COLON Type SCOLON Body SCOLON                        {}
-             | KW_FUNCTION ID LPAREN FormalParameters RPAREN COLON Type SCOLON KW_FORWARD SCOLON {}
-             | KW_FUNCTION ID LPAREN FormalParameters RPAREN COLON Type SCOLON Body SCOLON       {}
-             ;
-IdList : IdList COMMA ID {}
-       | ID              {}
-       ;
-IfStatement : KW_IF Expression KW_THEN StatementSeq KW_END                       {}
-            | KW_IF Expression KW_THEN StatementSeq ElseifStuff KW_END           {}
-            | KW_IF Expression KW_THEN StatementSeq ElseStuff KW_END             {}
-            | KW_IF Expression KW_THEN StatementSeq ElseifStuff ElseStuff KW_END {}
-            ;
-LValue : ID           {}
-       | ID LValStuff {}
-       ;
-LValStuff : LValStuff LValStuffItem {}
-          | LValStuffItem           {}
-          ;
-LValStuffItem : DOT ID                   {}
-              | LBRACK Expression RBRACK {}
-              ;
-LValuesList : LValuesList LValue COMMA {}
-            | LValue COMMA             {}
-            ;
-NullStatement : {};
-ProcedureCall : ID LPAREN ExpressionsList RPAREN {}
-              | ID LPAREN RPAREN                 {}
-              ;
-ProcedureDecl : KW_PROCEDURE ID LPAREN RPAREN SCOLON KW_FORWARD SCOLON                  {}
-              | KW_PROCEDURE ID LPAREN RPAREN SCOLON Body SCOLON                        {}
-              | KW_PROCEDURE ID LPAREN FormalParameters RPAREN SCOLON KW_FORWARD SCOLON {}
-              | KW_PROCEDURE ID LPAREN FormalParameters RPAREN SCOLON Body SCOLON       {}
-              ;
-Program : Block DOT                                               {}
-        | ConstantDecl Block DOT                                  {}
-        | TypeDecl Block DOT                                      {}
-        | ConstantDecl TypeDecl Block DOT                         {}
-        | VarDecl Block DOT                                       {}
-        | ConstantDecl VarDecl Block DOT                          {}
-        | TypeDecl VarDecl Block DOT                              {}
-        | ConstantDecl TypeDecl VarDecl Block DOT                 {}
-        | FuncsAndProceds Block DOT                               {}
-        | ConstantDecl FuncsAndProceds Block DOT                  {}
-        | TypeDecl FuncsAndProceds Block DOT                      {}
-        | ConstantDecl TypeDecl FuncsAndProceds Block DOT         {}
-        | VarDecl FuncsAndProceds Block DOT                       {}
-        | ConstantDecl VarDecl FuncsAndProceds Block DOT          {}
-        | TypeDecl VarDecl FuncsAndProceds Block DOT              {}
-        | ConstantDecl TypeDecl VarDecl FuncsAndProceds Block DOT {}
+
+ConstDecl : IDENTSY EQSY Expression SCOLONSY {cg.storeConst($1,$3);}
+	  ;
+
+PFDecls : PFDecls2 {cg.printTopMain();}
         ;
-ReadStatement : KW_READ LPAREN LValue RPAREN             {}
-              | KW_READ LPAREN LValuesList LValue RPAREN {}
-              ;
-RecordAndVarTypeItem : IdList COLON Type SCOLON {};
-RecordAndVarTypeItems : RecordAndVarTypeItems RecordAndVarTypeItem {}
-                      | RecordAndVarTypeItem                       {}
-                      ;
-RecordType : KW_RECORD RecordAndVarTypeItems KW_END {}
-           | KW_RECORD KW_END                       {}
+
+PFDecls2 : PFDecls2 ProcedureDecl
+        | PFDecls2 FunctionDecl
+        |
+        ;
+
+ProcedureDecl : PSignature SCOLONSY FORWARDSY SCOLONSY {}
+              | PSignature SCOLONSY Body SCOLONSY {cg.doProcedureEpilogue();}
+	      ;
+
+PSignature : ProcedureTop LPARENSY OptFormalParameters RPARENSY {}
            ;
-RepeatStatement : KW_REPEAT StatementSeq KW_UNTIL Expression {};
-ReturnStatement : KW_RETURN Expression {}
-                | KW_RETURN            {}
-                ;
-SimpleType : ID {};
-Statement : Assignment      {}
-          | IfStatement     {}
-          | WhileStatement  {}
-          | RepeatStatement {}
-          | ForStatement    {}
-          | StopStatement   {}
-          | ReturnStatement {}
-          | ReadStatement   {}
-          | WriteStatement  {}
-          | ProcedureCall   {}
-          | NullStatement   {}
-          ;
-StatementSeq : StatementSeq SCOLON Statement {}
-             | Statement                     {}
+
+ProcedureTop : PROCEDURESY IDENTSY {cg.doProcedurePrologue($2);}
              ;
-StopStatement : KW_STOP {};
+
+FunctionDecl : FSignature SCOLONSY FORWARDSY SCOLONSY {}
+	     | FSignature SCOLONSY Body SCOLONSY {}
+             ;
+
+FSignature : FunctionTop LPARENSY OptFormalParameters RPARENSY COLONSY Type {}
+           ;
+
+FunctionTop : FUNCTIONSY IDENTSY {cg.startFunction($2);}
+
+OptFormalParameters : FormalParameters {cg.moveStackPtrPastParameters();}
+                    | {}
+                    ;
+
+FormalParameters : FormalParameters SCOLONSY FormalParameter {}
+                 | FormalParameter {}
+                 ;
+
+FormalParameter : OptVar IdentList COLONSY Type {cg.makeParameters($2,$4);}
+                ;
+
+OptVar : VARSY {}
+       | REFSY {}
+       | {}
+       ;
+
+
+Body : OptConstDecls OptTypeDecls OptVarDecls Block {}
+     ;
+
+Block : BEGINSY StatementList ENDSY {}
+      ;
+
+StatementList : StatementList SCOLONSY Statement {}
+              | Statement {}
+              ;
+
+OptTypeDecls : TYPESY TypeDecls
+             |
+             ;
+
+TypeDecls    : TypeDecls TypeDecl
+             | TypeDecl
+             ;
+
+TypeDecl : IDENTSY EQSY Type SCOLONSY {cg.storeType($1, $3);}
+         ;
+
 Type : SimpleType {}
      | RecordType {}
-     | ArrayType  {}
+     | ArrayType {}
      ;
-TypeDecl : KW_TYPE TypeDeclItems {};
-TypeDeclItem : ID EQ Type SCOLON {};
-TypeDeclItems : TypeDeclItems TypeDeclItem {}
-              | TypeDeclItem               {}
+
+SimpleType : IDENTSY {$$ = cg.lookupType($1);}
+           ;
+
+RecordType : RECORDSY FieldDecls ENDSY {$$ = $2;}
+           ;
+
+FieldDecls : FieldDecls FieldDecl {$$ = cg.mergeRecords($1,$2);}
+           | FieldDecl {}
+           ;
+
+FieldDecl : IdentList COLONSY Type SCOLONSY {$$ = cg.makeRecordVars($1,$3);}
+          ;
+
+IdentList : IdentList COMMASY IDENTSY {$$ = cg.appendStrList($1,$3);}
+          | IDENTSY {$$ = cg.makeStrList($1);}
+          ;
+
+ArrayType : ARRAYSY LBRACKETSY Expression COLONSY Expression RBRACKETSY OFSY Type {$$ = cg.buildArray($3,$5,$8);}
+          ;
+
+OptVarDecls : VARSY VarDecls
+            |
+            ;
+
+VarDecls    : VarDecls VarDecl
+            | VarDecl
+            ;
+
+VarDecl : IdentList COLONSY Type SCOLONSY {cg.makeVars($1,$3);}
+        ;
+
+Statement : Assignment {}
+          | IfStatement {cg.endIf();}
+          | WhileStatement {cg.endWhile($1);}
+          | RepeatStatement {}
+          | ForStatement {cg.endFor($1);}
+          | StopStatement {}
+          | ReturnStatement {}
+          | ReadStatement {}
+          | WriteStatement {}
+          | ProcedureCall {}
+          | {}
+          ;
+
+Assignment : LValue ASSIGNSY Expression {cg.assignExprToLval($1, $3);}
+           ;
+
+IfStatement : IfStuff ElseIfList ElseClause ENDSY {}
+            ;
+
+IfStuff : IfHead ThenPart {cg.doElse($1);}
+        ;
+
+IfHead : IFSY Expression {$$ = cg.startIf($2,false);}
+       ;
+
+ThenPart : THENSY StatementList {}
+         ;
+
+ElseIfList : ElseIfList ElseIfHead ThenPart {cg.doElse($2);}
+           | {}
+           ;
+
+ElseIfHead : ELSEIFSY Expression {$$ = cg.startIf($2,true);}
+           ;
+
+ElseClause : ELSESY StatementList {}
+           | {}
+           ;
+
+WhileStatement : WhileHead DOSY StatementList ENDSY {}
+               ;
+
+WhileHead : WhileSymbol Expression {cg.startWhile($1,$2);}
+          ;
+
+WhileSymbol : WHILESY {$$ = cg.preWhile();}
+
+RepeatStatement : RepeatSymbol StatementList UNTILSY Expression {cg.endRepeat($1,$4);}
+                ;
+
+RepeatSymbol : REPEATSY {$$ = cg.startRepeat();}
+             ;
+
+ForStatement : ToHead DOSY StatementList ENDSY{$$ = $1;}
+             ;
+
+ToHead : ForHead TOSY Expression {$$ = cg.compareFor($1,$3,true);}
+       | ForHead DOWNTOSY Expression {$$ = cg.compareFor($1,$3,false);}
+       ;
+
+ForHead : FORSY IDENTSY ASSIGNSY Expression {$$ = cg.startFor($2,$4);}
+        ;
+
+
+StopStatement : STOPSY {cg.doStop();}
               ;
-VarDecl : KW_VAR RecordAndVarTypeItems {};
-WhileStatement : KW_WHILE Expression KW_DO StatementSeq KW_END {};
-WriteStatement : KW_WRITE LPAREN ExpressionsList RPAREN {};
+
+ReturnStatement : RETURNSY Expression {}
+                | RETURNSY {}
+                ;
+
+
+ReadStatement : READSY LPARENSY ReadArgs RPARENSY {cg.clearExpressions();}
+              ;
+
+ReadArgs : ReadArgs COMMASY LValue {cg.readToLval($3);}
+         | LValue                  {cg.readToLval($1);}
+         ;
+
+WriteStatement : WRITESY LPARENSY WriteArgs RPARENSY {}
+               ;
+
+WriteArgs : WriteArgs COMMASY Expression {cg.unOp($3,&CodeGenerator::writeExpression);}
+          | Expression                   {cg.unOp($1,&CodeGenerator::writeExpression);}
+          ;
+
+ProcedureCall : IDENTSY LPARENSY OptArguments RPARENSY {cg.precallProcedure($1);}
+              ;
+OptArguments : Arguments {}
+             |           {}
+             ;
+Arguments : Arguments COMMASY Expression {cg.addArgument($3);}
+          | Expression                   {cg.addArgument($1);}
+          ;
+
+Expression : CHARCONSTSY                         {$$ = cg.charLiteral(yylval.char_val);}
+           | CHRSY LPARENSY Expression RPARENSY  {$$ = cg.charCast($3);}
+           | Expression ANDSY Expression         {$$ = cg.binOp($1,$3,&CodeGenerator::binOpAnd);}
+           | Expression DIVSY Expression         {$$ = cg.binOp($1,$3,&CodeGenerator::binOpDiv);}
+           | Expression EQSY Expression          {$$ = cg.binOp($1,$3,&CodeGenerator::binOpEq);}
+           | Expression GTESY Expression         {$$ = cg.binOp($1,$3,&CodeGenerator::binOpGteq);}
+           | Expression GTSY Expression          {$$ = cg.binOp($1,$3,&CodeGenerator::binOpGt);}
+           | Expression LTESY Expression         {$$ = cg.binOp($1,$3,&CodeGenerator::binOpLteq);}
+           | Expression LTSY Expression          {$$ = cg.binOp($1,$3,&CodeGenerator::binOpLt);}
+           | Expression MINUSSY Expression       {$$ = cg.binOp($1,$3,&CodeGenerator::binOpSub);}
+           | Expression MODSY Expression         {$$ = cg.binOp($1,$3,&CodeGenerator::binOpMod);}
+           | Expression MULTSY Expression        {$$ = cg.binOp($1,$3,&CodeGenerator::binOpMult);}
+           | Expression NEQSY Expression         {$$ = cg.binOp($1,$3,&CodeGenerator::binOpNeq);}
+           | Expression ORSY Expression          {$$ = cg.binOp($1,$3,&CodeGenerator::binOpOr);}
+           | Expression PLUSSY Expression        {$$ = cg.binOp($1,$3,&CodeGenerator::binOpAdd);}
+           | FunctionCall                        {}
+           | INTSY                               {$$ = cg.intLiteral($1);}
+           | LPARENSY Expression RPARENSY        {$$ = $2;}
+           | LValue                              {}
+           | MINUSSY Expression %prec UMINUSSY   {$$ = cg.unOp($2,&CodeGenerator::unOpNeg);}
+           | NOTSY Expression                    {$$ = cg.unOp($2,&CodeGenerator::unOpNot);}
+           | ORDSY LPARENSY Expression RPARENSY  {$$ = cg.intCast($3);}
+           | PREDSY LPARENSY Expression RPARENSY {$$ = cg.unOp($3,&CodeGenerator::unOpDecr);}
+           | STRINGSY                            {$$ = cg.stringLiteral($1);}
+           | SUCCSY LPARENSY Expression RPARENSY {$$ = cg.unOp($3,&CodeGenerator::unOpIncr);}
+           ;
+
+FunctionCall : IDENTSY LPARENSY OptArguments RPARENSY {cg.precallFunction($1);}
+             ;
+
+LValue : LValue DOTSY IDENTSY {$$ = cg.getLvalRec($1,$3);}
+       | LValue LBRACKETSY Expression RBRACKETSY {$$ = cg.getLvalArr($1,$3);}
+       | IDENTSY {$$ = cg.getLval($1);}
+       ;
 %%
 
 void yyerror(const char* s)
 {
-  std::cout << s << " at line " << yylineno;
-  std::cout << " near \"" << yytext << "\"" << std::endl;
+  std::cerr << s << " at line " << yylineno;
+  std::cerr << " near \"" << yytext << "\"" << std::endl;
+  throw /*control back to main*/;
 }
